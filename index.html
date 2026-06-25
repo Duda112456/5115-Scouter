@@ -10,7 +10,7 @@
             --bg-dark: #0a0514;       /* Deep Midnight Purple */
             --bg-card: #150d26;       /* Dark Purple Card Surface */
             --primary: #ff7300;       /* Highly Vibrant Coppery Orange */
-            --primary-hover: #e06600; /* Darker vibrant orange for button presses */
+            --primary-hover: #e06600; /* Darker vibrant orange */
             --text-main: #f3f0f7;     /* High Contrast Text */
             --text-muted: #a497bd;    /* Lavender Gray Subtexts */
             --border-color: #2b1c47;  /* Purple Framing */
@@ -22,7 +22,7 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
             background-color: var(--bg-dark); 
             color: var(--text-main); 
-            padding: 15px 15px 95px 15px; /* Bottom padding keeps layout clear of the floating nav bar */
+            padding: 15px 15px 105px 15px; /* Extra bottom padding keeps clear of the floating nav bar */
         }
 
         h1 { 
@@ -52,7 +52,7 @@
         .form-group { display: flex; flex-direction: column; }
         label { margin-bottom: 6px; font-weight: 600; font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
         
-        input[type="text"], input[type="number"], select { 
+        input[type="text"], input[type="number"], select, textarea { 
             background-color: var(--bg-dark);
             color: var(--text-main);
             padding: 12px; 
@@ -60,8 +60,9 @@
             border-radius: 10px; 
             font-size: 16px; 
             transition: all 0.2s ease;
+            font-family: inherit;
         }
-        input:focus, select:focus { 
+        input:focus, select:focus, textarea:focus { 
             border-color: var(--primary); 
             outline: none; 
             box-shadow: 0 0 0 3px rgba(255, 115, 0, 0.25); 
@@ -114,7 +115,6 @@
             border-bottom: 1px solid rgba(43, 28, 71, 0.4); 
             font-size: 15px; 
         }
-        td:last-child { border-bottom: none; }
         td::before { content: attr(data-label); font-weight: 600; color: var(--text-muted); font-size: 0.9rem; }
         td[data-label="Team #"] { font-size: 1.35rem; color: var(--primary); }
         
@@ -130,10 +130,53 @@
             color: var(--primary);
         }
 
-        /* Floating Pill Navigation Dock matching your sketch */
+        /* Expanding Live Team Notes UI Block */
+        .notes-row {
+            border-bottom: none;
+            padding-top: 10px;
+            display: block;
+        }
+        .notes-toggle-btn {
+            background: #23163d;
+            color: var(--text-main);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            width: auto;
+            margin-top: 0;
+            border: 1px solid var(--border-color);
+        }
+        .notes-container {
+            display: none;
+            margin-top: 10px;
+            background: var(--bg-dark);
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+        }
+        .notes-container.open { display: block; }
+        .notes-textarea {
+            width: 100%;
+            height: 70px;
+            resize: none;
+            font-size: 0.9rem;
+            padding: 8px;
+            margin-bottom: 8px;
+        }
+        .notes-save-btn {
+            padding: 8px 12px;
+            font-size: 0.85rem;
+            width: auto;
+            float: right;
+            margin-top: 0;
+        }
+        .notes-clear { clear: both; }
+
+        /* Floating Pill Navbar with Sliding Slider Animation Track */
         .sketch-navbar-container {
             position: fixed;
-            bottom: 20px;
+            bottom: 25px;
             left: 0;
             width: 100%;
             display: flex;
@@ -145,19 +188,33 @@
         .sketch-navbar-pill {
             background-color: var(--bg-card);
             border: 2px solid var(--primary);
-            padding: 6px;
+            padding: 4px;
             border-radius: 40px;
             display: flex;
-            gap: 6px;
+            position: relative;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7);
             pointer-events: auto;
+            overflow: hidden;
+        }
+
+        /* Animated sliding tab indicator bubble backdrop */
+        .nav-slider-bubble {
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            height: calc(100% - 8px);
+            width: calc(50% - 6px);
+            background-color: var(--primary);
+            border-radius: 35px;
+            transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+            z-index: 1;
         }
 
         .nav-pill-btn {
             background: transparent;
             border: none;
             color: var(--text-muted);
-            padding: 12px 22px;
+            padding: 12px 24px;
             border-radius: 30px;
             cursor: pointer;
             font-size: 0.9rem;
@@ -165,9 +222,9 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            width: auto;
-            margin: 0;
-            transition: all 0.2s ease;
+            position: relative;
+            z-index: 2; /* Sits cleanly directly on top of sliding bubble layer */
+            transition: color 0.25s ease;
         }
 
         .nav-pill-btn svg {
@@ -177,7 +234,6 @@
         }
 
         .nav-pill-btn.active-tab {
-            background-color: var(--primary);
             color: #ffffff;
         }
 
@@ -189,9 +245,6 @@
             .controls { flex-direction: row; align-items: center; }
             .controls select { width: auto; min-width: 250px; }
             
-            /* Keep tabs completely separate on desktop per the explicit requirement */
-            .sketch-navbar-container { display: flex; } 
-            
             table { display: table; width: 100%; border-collapse: separate; border-spacing: 0; background: var(--bg-card); border-radius: 16px; overflow: hidden; border: 1px solid var(--border-color); }
             thead { display: table-header-group; }
             tbody { display: table-row-group; }
@@ -202,6 +255,10 @@
             td::before { content: ""; } 
             td[data-label="Team #"] { font-size: 1rem; color: var(--text-main); }
             .alliance-input { width: 70px; }
+
+            .notes-row { display: table-row; }
+            .notes-td { display: table-cell; colspan: 7; padding: 0 14px 14px 14px; border-top: none; }
+            .notes-container { margin-top: 0; }
         }
     </style>
 </head>
@@ -273,11 +330,13 @@
 
     <div class="sketch-navbar-container">
         <div class="sketch-navbar-pill">
-            <button class="nav-pill-btn active-tab" onclick="switchView('rankingsView', this)">
+            <div class="nav-slider-bubble" id="navBubble"></div>
+            
+            <button class="nav-pill-btn active-tab" onclick="switchView('rankingsView', this, 0)">
                 <svg viewBox="0 0 24 24"><path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v3c0 2.42 1.72 4.44 4.005 4.901C7.914 15.91 10.13 17 12 17s4.086-1.09 4.995-4.099C19.28 12.44 21 10.42 21 8V7c0-1.1-.9-2-2-2zm-2 5c0 1.2-.53 2.18-1.5 2.65V5h1.5v5zM5 10V5h1.5v7.65C5.53 12.18 5 11.2 5 10zm7 9c-1.66 0-3 1.34-3 3h6c0-1.66-1.34-3-3-3z"/></svg>
                 Team Rankings
             </button>
-            <button class="nav-pill-btn" onclick="switchView('logView', this)">
+            <button class="nav-pill-btn" onclick="switchView('logView', this, 1)">
                 <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
                 Log/Edit Team Info
             </button>
@@ -304,14 +363,19 @@
 
         let localTeamsArray = [];
 
-        // Tab View Router Switching Logic
-        window.switchView = function(viewId, clickedButton) {
+        // Dynamic Tab Routing Switch & Animated Slider Calculator
+        window.switchView = function(viewId, clickedButton, indexPosition) {
             document.querySelectorAll('.app-view').forEach(view => view.classList.remove('active-view'));
             document.querySelectorAll('.nav-pill-btn').forEach(btn => btn.classList.remove('active-tab'));
             
             document.getElementById(viewId).classList.add('active-view');
             clickedButton.classList.add('active-tab');
-            window.scrollTo(0, 0); // Reset screen position to top on shift
+            
+            // Computes translation offset tracking to slide background bubble precisely
+            const bubbleOffset = indexPosition * 100;
+            document.getElementById('navBubble').style.transform = `translateX(${bubbleOffset}%)`;
+            
+            window.scrollTo(0, 0);
         }
 
         document.getElementById('teamForm').addEventListener('submit', async (e) => {
@@ -330,8 +394,8 @@
             await setDoc(doc(db, "ftc_teams", teamNum), teamData, { merge: true });
             document.getElementById('teamForm').reset();
             
-            // Switch tabs cleanly back to the rankings tab view automatically upon entry submission
-            switchView('rankingsView', document.querySelectorAll('.nav-pill-btn')[0]);
+            // Animates view swap smoothly back to ranking leaderboard tab 
+            switchView('rankingsView', document.querySelectorAll('.nav-pill-btn')[0], 0);
         });
 
         window.updateAllianceRank = async function(teamNum, newRank) {
@@ -341,15 +405,34 @@
             });
         }
 
+        // Global function to update scouting comments directly inside cards
+        window.saveTeamNotes = async function(teamNum, textareaElement) {
+            const notesText = textareaElement.value.trim();
+            const button = textareaElement.nextElementSibling;
+            button.innerText = "Saving...";
+            
+            await updateDoc(doc(db, "ftc_teams", teamNum), {
+                teamNotes: notesText
+            });
+            
+            button.innerText = "Saved!";
+            setTimeout(() => { button.innerText = "Save Notes"; }, 1500);
+        }
+
+        // Toggles local dropdown visibility for the notes window drawer
+        window.toggleNotesDrawer = function(teamNum) {
+            const drawer = document.getElementById(`notes-${teamNum}`);
+            drawer.classList.toggle('open');
+        }
+
         onSnapshot(teamsCollection, (snapshot) => {
             localTeamsArray = [];
             snapshot.forEach((doc) => {
                 let data = doc.data();
                 if (data.allianceRank === undefined) data.allianceRank = 999;
-                
-                // Add fallback conversions to protect legacy database values
                 if (data.autoOpr === undefined) data.autoOpr = data.opr || 0;
                 if (data.teleopOpr === undefined) data.teleopOpr = 0;
+                if (data.teamNotes === undefined) data.teamNotes = ""; // Null safety string parsing
 
                 localTeamsArray.push(data);
             });
@@ -375,6 +458,7 @@
             tbody.innerHTML = '';
 
             localTeamsArray.forEach((team) => {
+                // Desktop wrapper or standalone mobile card block rendering
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td data-label="Alliance Rank">
@@ -390,6 +474,14 @@
                     <td data-label="Teleop OPR">${team.teleopOpr}</td>
                     <td data-label="Avg Points">${team.avgScore}</td>
                     <td data-label="Endgame Pts">${team.endgame}</td>
+                    <td class="notes-row">
+                        <button class="notes-toggle-btn" onclick="toggleNotesDrawer('${team.teamNumber}')">📄 View/Edit Notes</button>
+                        <div class="notes-container" id="notes-${team.teamNumber}">
+                            <textarea class="notes-textarea" placeholder="Type strategy notes, autonomous paths, or driver reliability here...">${team.teamNotes}</textarea>
+                            <button class="notes-save-btn" onclick="saveTeamNotes('${team.teamNumber}', this.previousElementSibling)">Save Notes</button>
+                            <div class="notes-clear"></div>
+                        </div>
+                    </td>
                 `;
                 tbody.appendChild(tr);
             });
