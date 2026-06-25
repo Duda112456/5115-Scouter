@@ -146,6 +146,15 @@
             width: auto;
             margin-top: 0;
             border: 1px solid var(--border-color);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .notes-toggle-btn svg {
+            width: 14px;
+            height: 14px;
+            fill: var(--primary);
+            display: block;
         }
         .notes-container {
             display: none;
@@ -357,7 +366,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, doc, setDoc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // Verified working credentials for the 5115 project database
         const firebaseConfig = {
             apiKey: "AIzaSyAcPbzSt-iY8RVsYdZpvIfAAS86CwSYa5Q",
             authDomain: "ftc-team-scouter.firebaseapp.com",
@@ -388,7 +396,7 @@
             window.scrollTo(0, 0);
         }
 
-        // Form Submit Handler (Saves or Overwrites Team Records)
+        // Form Submit Handler
         document.getElementById('teamForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const teamNum = document.getElementById('teamNumber').value.trim();
@@ -405,7 +413,6 @@
             await setDoc(doc(db, "ftc_teams", teamNum), teamData, { merge: true });
             document.getElementById('teamForm').reset();
             
-            // Redirect smoothly back to leaderboard view upon entry complete
             switchView('rankingsView', document.querySelectorAll('.nav-pill-btn')[0], 0);
         });
 
@@ -488,7 +495,12 @@
                     <td data-label="Avg Points">${team.avgScore}</td>
                     <td data-label="Endgame Pts">${team.endgame}</td>
                     <td class="notes-row">
-                        <button class="notes-toggle-btn" onclick="toggleNotesDrawer('${team.teamNumber}')">📄 View/Edit Notes</button>
+                        <button class="notes-toggle-btn" onclick="toggleNotesDrawer('${team.teamNumber}')">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+                            </svg>
+                            View/Edit Notes
+                        </button>
                         <div class="notes-container" id="notes-${team.teamNumber}">
                             <textarea class="notes-textarea" placeholder="Type strategy notes here...">${team.teamNotes}</textarea>
                             <button class="notes-save-btn" onclick="saveTeamNotes('${team.teamNumber}', this.previousElementSibling)">Save Notes</button>
