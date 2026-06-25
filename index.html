@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FTC Scouting Dashboard</title>
+    <style>
+        /* Global Styles */
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 15px; background-color: #f8f9fa; color: #212529; }
+        h1, h2 { color: #1a1a1a; margin-bottom: 10px; font-size: 1.5rem; }
+        h1 { border-bottom: 2px solid #007bff; padding-bottom: 8px; font-size: 1.8rem; }
+        
+        /* Form Styling */
+        form { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 25px; border: 1px solid #e9ecef; }
+        .form-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+        .form-group { display: flex; flex-direction: column; }
+        label { margin-bottom: 6px; font-weight: 600; font-size: 0.9rem; color: #495057; }
+        input[type="text"], input[type="number"], select { padding: 12px; border: 1px solid #ced4da; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
+        input:focus, select:focus { border-color: #007bff; outline: none; box-shadow: 0 0 0 3px rgba(0,123,255,0.25); }
+        button { background: #007bff; color: white; padding: 14px; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold; margin-top: 10px; width: 100%; transition: background 0.2s; }
+        button:hover { background: #0056b3; }
+        
+        /* Controls */
+        .controls { margin-bottom: 20px; background: #e9ecef; padding: 15px; border-radius: 12px; display: flex; flex-direction: column; gap: 10px; }
+        .controls select { width: 100%; background: white; }
+
+        /* Mobile-First Layout: Cards instead of a wide table */
+        table, thead, tbody, th, td, tr { display: block; }
+        thead { display: none; } /* Hide headers on mobile */
+        
+        tr { background: white; margin-bottom: 15px; padding: 15px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #e9ecef; }
+        td { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #f1f3f5; font-size: 15px; }
+        td:last-child { border-bottom: none; }
+        
+        /* Add labels before data on mobile */
+        td::before { content: attr(data-label); font-weight: bold; color: #6c757d; }
+        
+        /* Input specifically for Alliance Rank */
+        .alliance-input { width: 80px; padding: 8px; text-align: center; font-size: 16px; border-radius: 6px; border: 1px solid #ced4da; }
+
+        /* Responsive Breakpoint: Laptops, Desktops, and Large Tablets */
+        @media (min-width: 768px) {
+            .form-grid { grid-template-columns: repeat(3, 1fr); }
+            button { width: auto; padding: 12px 25px; align-self: end; }
+            .controls { flex-direction: row; align-items: center; justify-content: flex-start; }
+            .controls select { width: auto; min-width: 250px; }
+
+            /* Revert back to standard desktop grid table */
+            table { display: table; width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+            thead { display: table-header-group; }
+            tbody { display: table-row-group; }
+            tr { display: table-row; background: none; margin-bottom: 0; padding: 0; border: none; border-bottom: 1px solid #dee2e6; }
+            tr:hover { background-color: #f8f9fa; }
+            th, td { display: table-cell; padding: 14px; text-align: left; border-bottom: 1px solid #dee2e6; }
+            th { background-color: #007bff; color: white; font-weight: 600; }
+            td::before { content: ""; } /* Remove mobile labels */
+            .alliance-input { width: 70px; }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>FTC Scouting Dashboard</h1>
+
+    <form id="teamForm">
+        <h2>Add / Update Team</h2>
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="teamNumber">Team Number</label>
+                <input type="text" id="teamNumber" required placeholder="e.g., 12345" inputmode="numeric">
+            </div>
+            <div class="form-group">
+                <label for="teamName">Team Name</label>
+                <input type="text" id="teamName" required placeholder="e.g., RoboPhantoms">
+            </div>
+            <div class="form-group">
+                <label for="opr">OPR</label>
+                <input type="number" id="opr" step="0.1" required placeholder="0.0">
+            </div>
+            <div class="form-group">
+                <label for="avgScore">Avg. Score</label>
+                <input type="number" id="avgScore" step="0.1" required placeholder="0.0">
+            </div>
+            <div class="form-group">
+                <label for="endgame">Endgame Pts</label>
+                <input type="number" id="endgame" step="1" required placeholder="0">
+            </div>
+            <button type="submit">Save Team</button>
+        </div>
+    </form>
+
+    <div class="controls">
+        <label for="sortBy"><strong>Sort Rank By:</strong></label>
+        <select id="sortBy" onchange="loadTeams()">
+            <option value="allianceRank">Alliance Selection Rank (Manual)</option>
+            <option value="opr">OPR</option>
+            <option value="avgScore">Avg. Score</option>
+            <option value="endgame">Endgame Pts</option>
+        </select>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Alliance Rank</th>
+                <th>Team #</th>
+                <th>Team Name</th>
+                <th>OPR</th>
+                <th>Avg Score</th>
+                <th>Endgame Pts</th>
+            </tr>
+        </thead>
+        <tbody id="teamsTableBody">
+            </tbody>
+    </table>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, doc, setDoc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // TODO: Replace with YOUR Firebase Configuration
+        const firebaseConfig = {
+    apiKey: "AIzaSyAcPbzSt-iY8RVsYdZpvIfAAS86CwSYa5Q",
+    authDomain: "ftc-team-scouter.firebaseapp.com",
+    projectId: "ftc-team-scouter",
+    storageBucket: "ftc-team-scouter.firebasestorage.app",
+    messagingSenderId: "873760240222",
+    appId: "1:873760240222:web:3114e1e3fd6661d1d4facf",
+    measurementId: "G-ZCQ4RCQBMD"
+};
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const teamsCollection = collection(db, "ftc_teams");
+
+        let localTeamsArray = [];
+
+        document.getElementById('teamForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const teamNum = document.getElementById('teamNumber').value.trim();
+            
+            const teamData = {
+                teamNumber: teamNum,
+                teamName: document.getElementById('teamName').value.trim(),
+                opr: parseFloat(document.getElementById('opr').value),
+                avgScore: parseFloat(document.getElementById('avgScore').value),
+                endgame: parseInt(document.getElementById('endgame').value),
+            };
+
+            await setDoc(doc(db, "ftc_teams", teamNum), teamData, { merge: true });
+            document.getElementById('teamForm').reset();
+        });
+
+        window.updateAllianceRank = async function(teamNum, newRank) {
+            const rankVal = parseInt(newRank);
+            await updateDoc(doc(db, "ftc_teams", teamNum), {
+                allianceRank: isNaN(rankVal) ? 999 : rankVal
+            });
+        }
+
+        onSnapshot(teamsCollection, (snapshot) => {
+            localTeamsArray = [];
+            snapshot.forEach((doc) => {
+                let data = doc.data();
+                if (data.allianceRank === undefined) data.allianceRank = 999;
+                localTeamsArray.push(data);
+            });
+            renderTable();
+        });
+
+        window.loadTeams = function() {
+            renderTable();
+        }
+
+        function renderTable() {
+            const sortBy = document.getElementById('sortBy').value;
+            
+            localTeamsArray.sort((a, b) => {
+                if (sortBy === 'allianceRank') {
+                    return a.allianceRank - b.allianceRank;
+                } else {
+                    return b[sortBy] - a[sortBy];
+                }
+            });
+
+            const tbody = document.getElementById('teamsTableBody');
+            tbody.innerHTML = '';
+
+            localTeamsArray.forEach((team) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td data-label="Alliance Rank">
+                        <input type="number" class="alliance-input" 
+                               value="${team.allianceRank === 999 ? '' : team.allianceRank}" 
+                               placeholder="--" 
+                               onchange="updateAllianceRank('${team.teamNumber}', this.value)"
+                               inputmode="numeric">
+                    </td>
+                    <td data-label="Team #"><b>${team.teamNumber}</b></td>
+                    <td data-label="Team Name">${team.teamName}</td>
+                    <td data-label="OPR">${team.opr}</td>
+                    <td data-label="Avg Score">${team.avgScore}</td>
+                    <td data-label="Endgame Pts">${team.endgame}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+    </script>
+</body>
+</html>
