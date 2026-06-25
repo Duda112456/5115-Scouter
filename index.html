@@ -5,46 +5,47 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>5115 Scouter Dashboard</title>
     <style>
-        /* Team 5115 Color Palette Styling */
+        /* Team 5115 Brand Color Identity */
         :root {
-            --bg-dark: #120c1f;       /* Deep Midnight Purple */
-            --bg-card: #1c142e;       /* Dark Purple Card Background */
-            --primary: #d17a3a;       /* Metallic Coppery Orange */
-            --primary-hover: #b8652b; /* Darker Copper */
-            --text-main: #f3f0f7;     /* High-contrast Off-White */
-            --text-muted: #a69bb5;    /* Muted Lavender/Gray */
-            --border-color: #2e2347;  /* Subtle Purple Border */
+            --bg-dark: #0a0514;       /* Deep Midnight Purple */
+            --bg-card: #150d26;       /* Dark Purple Card Surface */
+            --primary: #ff7300;       /* Highly Vibrant Coppery Orange */
+            --primary-hover: #e06600; /* Darker vibrant orange for button presses */
+            --text-main: #f3f0f7;     /* High Contrast Text */
+            --text-muted: #a497bd;    /* Lavender Gray Subtexts */
+            --border-color: #2b1c47;  /* Purple Framing */
         }
 
-        /* Global Reset & Body */
         * { box-sizing: border-box; margin: 0; padding: 0; }
+        
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
             background-color: var(--bg-dark); 
             color: var(--text-main); 
-            padding: 15px;
-            line-height: 1.5;
+            padding: 15px 15px 95px 15px; /* Bottom padding keeps layout clear of the floating nav bar */
         }
 
-        h1, h2 { font-weight: 700; letter-spacing: -0.5px; }
         h1 { 
             color: var(--primary); 
-            font-size: 1.8rem; 
+            font-size: 1.6rem; 
             padding-bottom: 12px; 
             margin-bottom: 20px;
             border-bottom: 2px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-align: center;
         }
-        h2 { font-size: 1.2rem; margin-bottom: 15px; color: var(--text-main); }
+        h2 { font-size: 1.2rem; margin-bottom: 15px; color: var(--text-main); text-transform: uppercase; letter-spacing: 0.5px;}
 
-        /* Forms Configuration */
+        /* Tab Visibility Control */
+        .app-view { display: none; }
+        .app-view.active-view { display: block; }
+
+        /* Form Layout */
         form { 
             background: var(--bg-card); 
             padding: 20px; 
             border-radius: 16px; 
-            margin-bottom: 25px; 
             border: 1px solid var(--border-color); 
         }
         .form-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
@@ -63,7 +64,7 @@
         input:focus, select:focus { 
             border-color: var(--primary); 
             outline: none; 
-            box-shadow: 0 0 0 3px rgba(209, 122, 58, 0.25); 
+            box-shadow: 0 0 0 3px rgba(255, 115, 0, 0.25); 
         }
         
         button { 
@@ -77,11 +78,11 @@
             font-weight: 700; 
             margin-top: 10px; 
             width: 100%; 
-            transition: background 0.2s ease; 
+            transition: background 0.2s; 
         }
         button:hover { background: var(--primary-hover); }
 
-        /* Filtering & Controls */
+        /* Sorting Controls Box */
         .controls { 
             margin-bottom: 20px; 
             background: var(--bg-card); 
@@ -94,34 +95,29 @@
         }
         .controls select { width: 100%; }
 
-        /* Mobile Layout: Premium Card View UI */
+        /* Mobile View Cards UI */
         table, thead, tbody, th, td, tr { display: block; }
         thead { display: none; } 
         
         tr { 
             background: var(--bg-card); 
             margin-bottom: 15px; 
-            padding: 20px; 
+            padding: 16px; 
             border-radius: 16px; 
             border: 1px solid var(--border-color); 
         }
-        
-        /* Layout specific adjustments to style rows like the design mockup */
         td { 
             display: flex; 
             justify-content: space-between; 
             align-items: center;
             padding: 10px 0; 
-            border-bottom: 1px solid rgba(46, 35, 71, 0.5); 
+            border-bottom: 1px solid rgba(43, 28, 71, 0.4); 
             font-size: 15px; 
         }
         td:last-child { border-bottom: none; }
         td::before { content: attr(data-label); font-weight: 600; color: var(--text-muted); font-size: 0.9rem; }
+        td[data-label="Team #"] { font-size: 1.35rem; color: var(--primary); }
         
-        /* Enhancing specific values within the card rows */
-        td[data-label="Team #"] { font-size: 1.3rem; color: var(--primary); }
-        
-        /* Alliance input container box */
         .alliance-input { 
             width: 75px; 
             padding: 8px; 
@@ -129,27 +125,80 @@
             font-size: 16px; 
             font-weight: 700;
             border-radius: 8px; 
-            border: 1px solid var(--primary); 
+            border: 2px solid var(--primary); 
             background: var(--bg-dark);
             color: var(--primary);
         }
 
-        /* Desktop Breakpoint Settings */
-        @media (min-width: 768px) {
-            body { padding: 30px; max-width: 1200px; margin: 0 auto; }
+        /* Floating Pill Navigation Dock matching your sketch */
+        .sketch-navbar-container {
+            position: fixed;
+            bottom: 20px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        .sketch-navbar-pill {
+            background-color: var(--bg-card);
+            border: 2px solid var(--primary);
+            padding: 6px;
+            border-radius: 40px;
+            display: flex;
+            gap: 6px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7);
+            pointer-events: auto;
+        }
+
+        .nav-pill-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 12px 22px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: auto;
+            margin: 0;
+            transition: all 0.2s ease;
+        }
+
+        .nav-pill-btn svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
+
+        .nav-pill-btn.active-tab {
+            background-color: var(--primary);
+            color: #ffffff;
+        }
+
+        /* Desktop View Adaptation Settings */
+        @media (min-width: 992px) {
+            body { padding: 30px; max-width: 1300px; margin: 0 auto; }
             .form-grid { grid-template-columns: repeat(3, 1fr); }
-            button { width: auto; padding: 12px 30px; align-self: end; grid-column: span 1; }
+            button { width: auto; padding: 12px 30px; align-self: end; }
             .controls { flex-direction: row; align-items: center; }
             .controls select { width: auto; min-width: 250px; }
-
-            /* Table format return on large screens */
+            
+            /* Keep tabs completely separate on desktop per the explicit requirement */
+            .sketch-navbar-container { display: flex; } 
+            
             table { display: table; width: 100%; border-collapse: separate; border-spacing: 0; background: var(--bg-card); border-radius: 16px; overflow: hidden; border: 1px solid var(--border-color); }
             thead { display: table-header-group; }
             tbody { display: table-row-group; }
             tr { display: table-row; background: none; margin-bottom: 0; border: none; }
-            tr:hover { background-color: rgba(46, 35, 71, 0.3); }
-            th, td { display: table-cell; padding: 16px; text-align: left; border-bottom: 1px solid var(--border-color); }
-            th { background-color: rgba(28, 20, 46, 0.8); color: var(--primary); font-weight: 700; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 0.5px; }
+            tr:hover { background-color: rgba(43, 28, 71, 0.3); }
+            th, td { display: table-cell; padding: 14px; text-align: left; border-bottom: 1px solid var(--border-color); }
+            th { background-color: rgba(21, 13, 38, 0.6); color: var(--primary); font-weight: 700; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px; }
             td::before { content: ""; } 
             td[data-label="Team #"] { font-size: 1rem; color: var(--text-main); }
             .alliance-input { width: 70px; }
@@ -158,67 +207,87 @@
 </head>
 <body>
 
-    <h1>
-        <span style="color:var(--text-main)">5115</span> SCOUTER
-    </h1>
+    <h1><span style="color:var(--text-main)">5115</span> Scouter</h1>
 
-    <form id="teamForm">
-        <h2>Add / Update Team Dataset</h2>
-        <div class="form-grid">
-            <div class="form-group">
-                <label for="teamNumber">Team Number</label>
-                <input type="text" id="teamNumber" required placeholder="e.g., 5115" inputmode="numeric">
+    <div id="logView" class="app-view">
+        <form id="teamForm">
+            <h2>Log / Edit Team Info</h2>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="teamNumber">Team Number</label>
+                    <input type="text" id="teamNumber" required placeholder="e.g., 5115" inputmode="numeric">
+                </div>
+                <div class="form-group">
+                    <label for="teamName">Team Name</label>
+                    <input type="text" id="teamName" required placeholder="e.g., RoboKnights">
+                </div>
+                <div class="form-group">
+                    <label for="autoOpr">Auto OPR</label>
+                    <input type="number" id="autoOpr" step="0.1" required placeholder="0.0">
+                </div>
+                <div class="form-group">
+                    <label for="teleopOpr">Teleop OPR</label>
+                    <input type="number" id="teleopOpr" step="0.1" required placeholder="0.0">
+                </div>
+                <div class="form-group">
+                    <label for="avgScore">Avg. Points</label>
+                    <input type="number" id="avgScore" step="0.1" required placeholder="0.0">
+                </div>
+                <div class="form-group">
+                    <label for="endgame">Endgame Points</label>
+                    <input type="number" id="endgame" step="1" required placeholder="0">
+                </div>
+                <button type="submit">Save Entry</button>
             </div>
-            <div class="form-group">
-                <label for="teamName">Team Name</label>
-                <input type="text" id="teamName" required placeholder="e.g., RoboKnights">
-            </div>
-            <div class="form-group">
-                <label for="opr">OPR</label>
-                <input type="number" id="opr" step="0.1" required placeholder="0.0">
-            </div>
-            <div class="form-group">
-                <label for="avgScore">Avg. Score</label>
-                <input type="number" id="avgScore" step="0.1" required placeholder="0.0">
-            </div>
-            <div class="form-group">
-                <label for="endgame">Endgame Pts</label>
-                <input type="number" id="endgame" step="1" required placeholder="0">
-            </div>
-            <button type="submit">Save Team Entry</button>
-        </div>
-    </form>
-
-    <div class="controls">
-        <label for="sortBy"><strong>Filter Rank Hierarchy:</strong></label>
-        <select id="sortBy" onchange="loadTeams()">
-            <option value="allianceRank">Alliance Selection Rank (Manual Top Pick)</option>
-            <option value="opr">OPR</option>
-            <option value="avgScore">Avg. Score</option>
-            <option value="endgame">Endgame Pts</option>
-        </select>
+        </form>
     </div>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Alliance Rank</th>
-                <th>Team #</th>
-                <th>Team Name</th>
-                <th>OPR</th>
-                <th>Avg Score</th>
-                <th>Endgame Pts</th>
-            </tr>
-        </thead>
-        <tbody id="teamsTableBody">
-            </tbody>
-    </table>
+    <div id="rankingsView" class="app-view active-view">
+        <div class="controls">
+            <label for="sortBy"><strong>Filter Rank Hierarchy:</strong></label>
+            <select id="sortBy" onchange="loadTeams()">
+                <option value="allianceRank">Alliance Selection Rank</option>
+                <option value="autoOpr">Auto OPR</option>
+                <option value="teleopOpr">Teleop OPR</option>
+                <option value="avgScore">Avg. Points</option>
+                <option value="endgame">Endgame Points</option>
+            </select>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Alliance Rank</th>
+                    <th>Team #</th>
+                    <th>Team Name</th>
+                    <th>Auto OPR</th>
+                    <th>Teleop OPR</th>
+                    <th>Avg Points</th>
+                    <th>Endgame Pts</th>
+                </tr>
+            </thead>
+            <tbody id="teamsTableBody">
+                </tbody>
+        </table>
+    </div>
+
+    <div class="sketch-navbar-container">
+        <div class="sketch-navbar-pill">
+            <button class="nav-pill-btn active-tab" onclick="switchView('rankingsView', this)">
+                <svg viewBox="0 0 24 24"><path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v3c0 2.42 1.72 4.44 4.005 4.901C7.914 15.91 10.13 17 12 17s4.086-1.09 4.995-4.099C19.28 12.44 21 10.42 21 8V7c0-1.1-.9-2-2-2zm-2 5c0 1.2-.53 2.18-1.5 2.65V5h1.5v5zM5 10V5h1.5v7.65C5.53 12.18 5 11.2 5 10zm7 9c-1.66 0-3 1.34-3 3h6c0-1.66-1.34-3-3-3z"/></svg>
+                Team Rankings
+            </button>
+            <button class="nav-pill-btn" onclick="switchView('logView', this)">
+                <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+                Log/Edit Team Info
+            </button>
+        </div>
+    </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, doc, setDoc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // Your verified configuration profile details maps
         const firebaseConfig = {
             apiKey: "AIzaSyAcPbzSt-iY8RVsYdZpvIfAAS86CwSYa5Q",
             authDomain: "ftc-team-scouter.firebaseapp.com",
@@ -235,6 +304,16 @@
 
         let localTeamsArray = [];
 
+        // Tab View Router Switching Logic
+        window.switchView = function(viewId, clickedButton) {
+            document.querySelectorAll('.app-view').forEach(view => view.classList.remove('active-view'));
+            document.querySelectorAll('.nav-pill-btn').forEach(btn => btn.classList.remove('active-tab'));
+            
+            document.getElementById(viewId).classList.add('active-view');
+            clickedButton.classList.add('active-tab');
+            window.scrollTo(0, 0); // Reset screen position to top on shift
+        }
+
         document.getElementById('teamForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const teamNum = document.getElementById('teamNumber').value.trim();
@@ -242,13 +321,17 @@
             const teamData = {
                 teamNumber: teamNum,
                 teamName: document.getElementById('teamName').value.trim(),
-                opr: parseFloat(document.getElementById('opr').value),
+                autoOpr: parseFloat(document.getElementById('autoOpr').value),
+                teleopOpr: parseFloat(document.getElementById('teleopOpr').value),
                 avgScore: parseFloat(document.getElementById('avgScore').value),
                 endgame: parseInt(document.getElementById('endgame').value),
             };
 
             await setDoc(doc(db, "ftc_teams", teamNum), teamData, { merge: true });
             document.getElementById('teamForm').reset();
+            
+            // Switch tabs cleanly back to the rankings tab view automatically upon entry submission
+            switchView('rankingsView', document.querySelectorAll('.nav-pill-btn')[0]);
         });
 
         window.updateAllianceRank = async function(teamNum, newRank) {
@@ -263,6 +346,11 @@
             snapshot.forEach((doc) => {
                 let data = doc.data();
                 if (data.allianceRank === undefined) data.allianceRank = 999;
+                
+                // Add fallback conversions to protect legacy database values
+                if (data.autoOpr === undefined) data.autoOpr = data.opr || 0;
+                if (data.teleopOpr === undefined) data.teleopOpr = 0;
+
                 localTeamsArray.push(data);
             });
             renderTable();
@@ -279,7 +367,7 @@
                 if (sortBy === 'allianceRank') {
                     return a.allianceRank - b.allianceRank;
                 } else {
-                    return b[sortBy] - a[sortBy];
+                    return (b[sortBy] || 0) - (a[sortBy] || 0);
                 }
             });
 
@@ -298,8 +386,9 @@
                     </td>
                     <td data-label="Team #"><b>${team.teamNumber}</b></td>
                     <td data-label="Team Name">${team.teamName}</td>
-                    <td data-label="OPR">${team.opr}</td>
-                    <td data-label="Avg Score">${team.avgScore}</td>
+                    <td data-label="Auto OPR">${team.autoOpr}</td>
+                    <td data-label="Teleop OPR">${team.teleopOpr}</td>
+                    <td data-label="Avg Points">${team.avgScore}</td>
                     <td data-label="Endgame Pts">${team.endgame}</td>
                 `;
                 tbody.appendChild(tr);
