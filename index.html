@@ -41,6 +41,22 @@
         .app-view { display: none; }
         .app-view.active-view { display: block; }
 
+        /* API Sync Panel styling */
+        .api-panel {
+            background: linear-gradient(135deg, #1f113a 0%, #150d26 100%);
+            padding: 20px;
+            border-radius: 16px;
+            border: 2px dashed var(--primary);
+            margin-bottom: 25px;
+        }
+        .api-inline-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 5px;
+        }
+        .api-inline-group input { flex: 1; }
+        .api-inline-group button { margin-top: 0; width: auto; white-space: nowrap; }
+
         /* Form Layout */
         form { 
             background: var(--bg-card); 
@@ -220,7 +236,7 @@
             font-size: 0.9rem;
             font-weight: 700;
             
-            /* Enhanced Flexbox alignment centering fixes */
+            /* Flexbox Alignment Center Fixes */
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -228,7 +244,7 @@
             
             gap: 8px;
             position: relative;
-            z-index: 2; /* Sits cleanly directly on top of sliding bubble layer */
+            z-index: 2; 
             transition: color 0.25s ease;
             width: auto;
             margin: 0;
@@ -277,8 +293,18 @@
     <h1><span style="color:var(--text-main)">5115</span> Scouter</h1>
 
     <div id="logView" class="app-view">
+        
+        <div class="api-panel">
+            <h2>Auto-Fill Event Roster</h2>
+            <label for="eventCodeInput">FTC Scout Event Code</label>
+            <div class="api-inline-group">
+                <input type="text" id="eventCodeInput" placeholder="e.g., USCODEN" style="text-transform: uppercase;">
+                <button type="button" id="apiFetchBtn" onclick="importFromFTCScout()">Fetch Event Data</button>
+            </div>
+        </div>
+
         <form id="teamForm">
-            <h2>Log / Edit Team Info</h2>
+            <h2>Log / Edit Team Info Manually</h2>
             <div class="form-grid">
                 <div class="form-group">
                     <label for="teamNumber">Team Number</label>
@@ -381,12 +407,78 @@
             document.getElementById(viewId).classList.add('active-view');
             clickedButton.classList.add('active-tab');
             
-            // Computes translation offset tracking to slide background bubble precisely
             const bubbleOffset = indexPosition * 100;
             document.getElementById('navBubble').style.transform = `translateX(${bubbleOffset}%)`;
             
             window.scrollTo(0, 0);
         }
+
+        // NEW: Pull Roster and Performance Metrics from FTC Scout REST Endpoint
+        window.importFromFTCScout = async function() {
+            const eventCode = document.getElementById('eventCodeInput').value.trim().toUpperCase();
+            const fetchBtn = document.getElementById('apiFetchBtn');
+
+            if (!eventCode) {
+                alert("Please type a valid tournament event code first.");
+                return;
+            }
+
+            fetchBtn.innerText = "Syncing...";
+            fetchBtn.disabled = true;
+
+            try {
+                // Fetch tournament team list directly from FTC Scout
+                const response = await fetch(`https://ftcscout.org/api/v1/events/${eventCode}/teams`);
+                
+                if (!response.ok) {
+                    throw new Error("Event data not found. Double check your code.");
+                }
+
+                const teamsData = await response.json();
+
+                if (teamsData.length === 0) {
+                    alert("Tournament found, but roster is empty.");
+                    resetBtn();
+                    return;
+                }
+
+                // Push fetched teams into your existing Firestore setup
+                for (const team of teamsData) {
+                    const teamNum = team.teamNumber.toString();
+                    
+                    // Extracts baseline stats if FTC Scout has already generated them for the season
+                    const autoOprValue = team.stats && team.stats.autoOpr ? parseFloat(team.stats.autoOpr.toFixed(1)) : 0;
+                    const teleopOprValue = team.stats && team.stats.teleopOpr ? parseFloat(team.stats.teleopOpr.toFixed(1)) : 0;
+                    const totalOprValue = team.stats && team.stats.opr ? parseFloat(team.stats.opr.toFixed(1)) : 0;
+
+                    const teamPayload = {
+                        teamNumber: teamNum,
+                        teamName: team.name || `Team ${teamNum}`,
+                        autoOpr: autoOprValue,
+                        teleopOpr: teleopOprValue,
+                        avgScore: totalOprValue, // Fallbacks to total OPR for performance tracking layout
+                        endgame: 0,
+                        teamNotes: team.teamNotes || "Imported directly via FTC Scout API sync module."
+                    };
+
+                    await setDoc(doc(db, "ftc_teams", teamNum), teamPayload, { merge: true });
+                }
+
+                alert(`Successfully synchronized ${teamsData.length} teams into your Database!`);
+                switchView('rankingsView', document.querySelectorAll('.nav-pill-btn')[0], 0);
+
+            } catch (error) {
+                console.error(error);
+                alert("Error calling FTC Scout server. Make sure the event code matches exactly.");
+            } finally {
+                resetBtn();
+            }
+
+            function resetBtn() {
+                fetchBtn.innerText = "Fetch Event Data";
+                fetchBtn.disabled = false;
+            }
+        };
 
         document.getElementById('teamForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -404,7 +496,6 @@
             await setDoc(doc(db, "ftc_teams", teamNum), teamData, { merge: true });
             document.getElementById('teamForm').reset();
             
-            // Animates view swap smoothly back to ranking leaderboard tab 
             switchView('rankingsView', document.querySelectorAll('.nav-pill-btn')[0], 0);
         });
 
@@ -415,7 +506,6 @@
             });
         }
 
-        // Global function to update scouting comments directly inside cards
         window.saveTeamNotes = async function(teamNum, textareaElement) {
             const notesText = textareaElement.value.trim();
             const button = textareaElement.nextElementSibling;
@@ -429,7 +519,6 @@
             setTimeout(() => { button.innerText = "Save Notes"; }, 1500);
         }
 
-        // Toggles local dropdown visibility for the notes window drawer
         window.toggleNotesDrawer = function(teamNum) {
             const drawer = document.getElementById(`notes-${teamNum}`);
             drawer.classList.toggle('open');
@@ -440,9 +529,9 @@
             snapshot.forEach((doc) => {
                 let data = doc.data();
                 if (data.allianceRank === undefined) data.allianceRank = 999;
-                if (data.autoOpr === undefined) data.autoOpr = data.opr || 0;
+                if (data.autoOpr === undefined) data.autoOpr = 0;
                 if (data.teleopOpr === undefined) data.teleopOpr = 0;
-                if (data.teamNotes === undefined) data.teamNotes = ""; // Null safety string parsing
+                if (data.teamNotes === undefined) data.teamNotes = ""; 
 
                 localTeamsArray.push(data);
             });
@@ -486,7 +575,7 @@
                     <td class="notes-row">
                         <button class="notes-toggle-btn" onclick="toggleNotesDrawer('${team.teamNumber}')">📄 View/Edit Notes</button>
                         <div class="notes-container" id="notes-${team.teamNumber}">
-                            <textarea class="notes-textarea" placeholder="Type strategy notes, autonomous paths, or driver reliability here...">${team.teamNotes}</textarea>
+                            <textarea class="notes-textarea" placeholder="Type strategy notes here...">${team.teamNotes}</textarea>
                             <button class="notes-save-btn" onclick="saveTeamNotes('${team.teamNumber}', this.previousElementSibling)">Save Notes</button>
                             <div class="notes-clear"></div>
                         </div>
