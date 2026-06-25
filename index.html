@@ -22,7 +22,7 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
             background-color: var(--bg-dark); 
             color: var(--text-main); 
-            padding: 15px 15px 105px 15px; /* Extra bottom padding keeps clear of the floating nav bar */
+            padding: 55px 15px 105px 15px; /* Added top padding to prevent layout clash with sticky banner */
         }
 
         h1 { 
@@ -106,6 +106,7 @@
             padding: 16px; 
             border-radius: 16px; 
             border: 1px solid var(--border-color); 
+            transition: background-color 0.3s ease;
         }
         td { 
             display: flex; 
@@ -128,6 +129,49 @@
             border: 2px solid var(--primary); 
             background: var(--bg-dark);
             color: var(--primary);
+        }
+
+        /* 3x Orange Flash Notification Effects */
+        .flash-notify {
+            animation: orangeFlash 0.5s ease-in-out 3;
+        }
+
+        @keyframes orangeFlash {
+            0%, 100% { background-color: var(--bg-card); }
+            50% { background-color: rgba(255, 115, 0, 0.45); }
+        }
+
+        /* Top Sticky Live Feed Ticker System Banner */
+        .ticker-banner-wrap {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #200f3a;
+            border-bottom: 2px solid var(--primary);
+            color: #ffffff;
+            height: 38px;
+            overflow: hidden;
+            white-space: nowrap;
+            z-index: 2000;
+            display: none; /* Toggled dynamically in JS when messages arrive */
+            align-items: center;
+        }
+        .ticker-text {
+            display: inline-block;
+            padding-left: 100%;
+            font-weight: bold;
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+            animation: scrollTicker 12s linear infinite;
+        }
+        .ticker-text span {
+            color: var(--primary);
+        }
+
+        @keyframes scrollTicker {
+            0% { transform: translate3d(0, 0, 0); }
+            100% { transform: translate3d(-100%, 0, 0); }
         }
 
         /* Expanding Live Team Notes UI Block */
@@ -276,13 +320,9 @@
             cursor: pointer;
             font-size: 0.9rem;
             font-weight: 700;
-            
-            /* Flexbox Alignment Center Fixes */
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            align-content: center;
-            
             gap: 8px;
             position: relative;
             z-index: 2; 
@@ -300,13 +340,11 @@
             flex-shrink: 0;
         }
 
-        .nav-pill-btn.active-tab {
-            color: #ffffff;
-        }
+        .nav-pill-btn.active-tab { color: #ffffff; }
 
         /* Desktop View Adaptation Settings */
         @media (min-width: 992px) {
-            body { padding: 30px; max-width: 1300px; margin: 0 auto; }
+            body { padding: 60px 30px 105px 30px; max-width: 1300px; margin: 0 auto; }
             .form-grid { grid-template-columns: repeat(3, 1fr); }
             button { width: auto; padding: 12px 30px; align-self: end; }
             .controls { flex-direction: row; align-items: center; }
@@ -330,6 +368,10 @@
     </style>
 </head>
 <body>
+
+    <div class="ticker-banner-wrap" id="tickerBanner">
+        <div class="ticker-text" id="tickerText"></div>
+    </div>
 
     <h1><span style="color:var(--text-main)">5115</span> Scouter</h1>
 
@@ -413,8 +455,6 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, doc, setDoc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        
-        // Import official client-side Google AI SDK module
         import { GoogleGenAI } from "https://esm.run/@google/genai";
 
         const firebaseConfig = {
@@ -432,12 +472,29 @@
         const teamsCollection = collection(db, "ftc_teams");
 
         let localTeamsArray = [];
+        let historicalTeamsMap = new Map(); // Track metrics state to detect specific categories updated
+        let observedVisibleTeams = new Set(); // Tracks rows currently on screen
+        let activeViewId = 'rankingsView';
+        let bannerQueue = [];
+        let bannerIsRunning = false;
 
-        // Integrated Google Gemini API Key configuration
         const GEMINI_API_KEY = "AQ.Ab8RN6Ijygst1gJWXfEkTnL5XdRMdEdwR2xlreF2Sm-npBWemw";
+
+        // Setup DOM Visibility Tracker Setup (Intersection Observer)
+        const rowVisibilityObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                const teamNum = entry.target.getAttribute('data-team');
+                if (entry.isIntersecting) {
+                    observedVisibleTeams.add(teamNum);
+                } else {
+                    observedVisibleTeams.delete(teamNum);
+                }
+            });
+        }, { threshold: 0.1 });
 
         // Dynamic Tab Routing Switch
         window.switchView = function(viewId, clickedButton, indexPosition) {
+            activeViewId = viewId;
             document.querySelectorAll('.app-view').forEach(view => view.classList.remove('active-view'));
             document.querySelectorAll('.nav-pill-btn').forEach(btn => btn.classList.remove('active-tab'));
             
@@ -446,7 +503,6 @@
             
             const bubbleOffset = indexPosition * 100;
             document.getElementById('navBubble').style.transform = `translateX(${bubbleOffset}%)`;
-            
             window.scrollTo(0, 0);
         }
 
@@ -476,7 +532,6 @@
             });
         }
 
-        // Save original match commentary text box raw data
         window.saveTeamNotes = async function(teamNum, textareaElement) {
             const notesText = textareaElement.value.trim();
             const button = textareaElement.nextElementSibling;
@@ -490,7 +545,6 @@
             setTimeout(() => { button.innerText = "Save Notes"; }, 1500);
         }
 
-        // Real-Time Gemini AI Summary Engine Module
         window.generateAiSummary = async function(teamNum, btnElement) {
             const textarea = document.getElementById(`textarea-${teamNum}`);
             const rawNotes = textarea.value.trim();
@@ -505,10 +559,7 @@
             btnElement.disabled = true;
 
             try {
-                // Initialize the official Google Gen AI SDK
                 const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
-                
-                // Prompt optimized for concise FTC Robotics competition strategy takeaways
                 const prompt = `You are a scouting assistant for FTC Team 5115. Summarize these raw scout match notes into short bullet points (max 3 bullets). Focus strictly on robot performance, drive team behavior, autonomous capabilities, errors, or alliance compatibility. Output raw HTML bullets (<ul> and <li> tags) only. Do not add intro conversational text or headers. Raw Notes: "${rawNotes}"`;
 
                 const response = await ai.models.generateContent({
@@ -517,15 +568,11 @@
                 });
 
                 const cleanHtmlSummary = response.text.trim();
-
-                // Store AI summary output cleanly to a dedicated database field
-                await updateDoc(doc(db, "ftc_teams", teamNum), {
-                    aiSummary: cleanHtmlSummary
-                });
+                await updateDoc(doc(db, "ftc_teams", teamNum), { aiSummary: cleanHtmlSummary });
 
             } catch (err) {
                 console.error("Gemini Engine Failure:", err);
-                alert("AI generation failed. Check your API token limits or network connection status.");
+                alert("AI generation failed.");
             } finally {
                 btnElement.innerHTML = originalText;
                 btnElement.disabled = false;
@@ -537,8 +584,68 @@
             drawer.classList.toggle('open');
         }
 
+        // Global notification banner ticker processor
+        function triggerTickerBanner(teamNumber, teamName, category) {
+            bannerQueue.push({ teamNumber, teamName, category });
+            if (!bannerIsRunning) {
+                processNextBannerItem();
+            }
+        }
+
+        function processNextBannerItem() {
+            if (bannerQueue.length === 0) {
+                bannerIsRunning = false;
+                document.getElementById('tickerBanner').style.display = 'none';
+                return;
+            }
+
+            bannerIsRunning = true;
+            const item = bannerQueue.shift();
+            const bannerContainer = document.getElementById('tickerBanner');
+            const tickerTextElement = document.getElementById('tickerText');
+
+            tickerTextElement.innerHTML = `LIVE FEED: Team <span>#${item.teamNumber} (${item.teamName})</span> updated metrics category: <span>[${item.category}]</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`;
+            bannerContainer.style.display = 'flex';
+
+            // Restart animation track timeline mechanics
+            tickerTextElement.style.animation = 'none';
+            tickerTextElement.offsetHeight; // Trigger layout reflow
+            tickerTextElement.style.animation = 'scrollTicker 10s linear 1';
+
+            // Wait until scrolling transition wraps completely before drawing next item
+            setTimeout(() => {
+                processNextBannerItem();
+            }, 10000);
+        }
+
         // Real-time Cloud Data Stream Sync Listener Engine
+        let isInitialLoad = true;
         onSnapshot(teamsCollection, (snapshot) => {
+            let changesToProcess = [];
+
+            snapshot.docChanges().forEach((change) => {
+                if (change.type === "modified" && !isInitialLoad) {
+                    const freshData = change.doc.data();
+                    const oldData = historicalTeamsMap.get(freshData.teamNumber) || {};
+                    
+                    // Identify which statistical field or metric mutated
+                    let matchingCategory = "General Profile Update";
+                    if (freshData.autoOpr !== oldData.autoOpr) matchingCategory = "Auto OPR";
+                    else if (freshData.teleopOpr !== oldData.teleopOpr) matchingCategory = "Teleop OPR";
+                    else if (freshData.avgScore !== oldData.avgScore) matchingCategory = "Avg Points";
+                    else if (freshData.endgame !== oldData.endgame) matchingCategory = "Endgame Points";
+                    else if (freshData.allianceRank !== oldData.allianceRank) matchingCategory = "Alliance Selection Rank";
+                    else if (freshData.teamNotes !== oldData.teamNotes) matchingCategory = "Scouting Notes Added";
+                    else if (freshData.aiSummary !== oldData.aiSummary) matchingCategory = "AI Takeaways Generated";
+
+                    changesToProcess.push({
+                        teamNumber: freshData.teamNumber,
+                        teamName: freshData.teamName || "Unknown",
+                        category: matchingCategory
+                    });
+                }
+            });
+
             localTeamsArray = [];
             snapshot.forEach((doc) => {
                 let data = doc.data();
@@ -549,8 +656,27 @@
                 if (data.aiSummary === undefined) data.aiSummary = ""; 
 
                 localTeamsArray.push(data);
+                historicalTeamsMap.set(data.teamNumber, data);
             });
+
             renderTable();
+            isInitialLoad = false;
+
+            // Trigger animations after elements are rendered in DOM
+            changesToProcess.forEach(change => {
+                const targetRow = document.getElementById(`row-${change.teamNumber}`);
+                const isCurrentlyVisible = observedVisibleTeams.has(change.teamNumber) && (activeViewId === 'rankingsView');
+
+                if (targetRow && isCurrentlyVisible) {
+                    // Flash orange 3 times if onscreen
+                    targetRow.classList.remove('flash-notify');
+                    targetRow.offsetHeight; // Flush styling pipeline frame step trigger
+                    targetRow.classList.add('flash-notify');
+                } else {
+                    // Trigger scrolling notification banner across the top if offscreen or on other tab
+                    triggerTickerBanner(change.teamNumber, change.teamName, change.category);
+                }
+            });
         });
 
         window.loadTeams = function() {
@@ -569,12 +695,16 @@
             });
 
             const tbody = document.getElementById('teamsTableBody');
+            
+            // Clean up old visibility observers before modifying layout mapping nodes
+            document.querySelectorAll('tr[data-team]').forEach(row => rowVisibilityObserver.unobserve(row));
             tbody.innerHTML = '';
 
             localTeamsArray.forEach((team) => {
                 const tr = document.createElement('tr');
+                tr.id = `row-${team.teamNumber}`;
+                tr.setAttribute('data-team', team.teamNumber);
                 
-                // If an AI summary is saved in the database, display it right inside the drawer bubble
                 const summaryHtml = team.aiSummary 
                     ? `<div class="ai-summary-display"><strong>⚡ AI Scouting Takeaways</strong>${team.aiSummary}</div>`
                     : '';
@@ -601,11 +731,8 @@
                             View/Edit Notes
                         </button>
                         <div class="notes-container" id="notes-${team.teamNumber}">
-                            
                             ${summaryHtml}
-
                             <textarea class="notes-textarea" id="textarea-${team.teamNumber}" placeholder="Type strategy or raw pit scouting notes here...">${team.teamNotes}</textarea>
-                            
                             <div class="notes-button-group">
                                 <button class="notes-ai-btn" onclick="generateAiSummary('${team.teamNumber}', this)">
                                     <svg viewBox="0 0 24 24">
@@ -620,6 +747,9 @@
                     </td>
                 `;
                 tbody.appendChild(tr);
+                
+                // Track row viewport presence
+                rowVisibilityObserver.observe(tr);
             });
         }
     </script>
