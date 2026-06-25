@@ -638,13 +638,23 @@
                     const oldData = historicalTeamsMap.get(freshData.teamNumber) || {};
                     
                     let matchingCategory = "General Profile Update";
-                    if (freshData.autoOpr !== oldData.autoOpr) matchingCategory = "Auto OPR";
-                    else if (freshData.teleopOpr !== oldData.teleopOpr) matchingCategory = "Teleop OPR";
-                    else if (freshData.avgScore !== oldData.avgScore) matchingCategory = "Avg Points";
-                    else if (freshData.endgame !== oldData.endgame) matchingCategory = "Endgame Points";
-                    else if (freshData.allianceRank !== oldData.allianceRank) matchingCategory = "Alliance Selection Rank";
-                    else if (freshData.teamNotes !== oldData.teamNotes) matchingCategory = "Scouting Notes Added";
-                    else if (freshData.aiSummary !== oldData.aiSummary) matchingCategory = "AI Takeaways Generated";
+                    
+                    // Prioritize text updates and explicit property checking to avoid falsy variations
+                    if (freshData.teamNotes !== undefined && freshData.teamNotes !== oldData.teamNotes) {
+                        matchingCategory = "Scouting Notes Added";
+                    } else if (freshData.aiSummary !== undefined && freshData.aiSummary !== oldData.aiSummary) {
+                        matchingCategory = "AI Takeaways Generated";
+                    } else if (Number(freshData.autoOpr) !== Number(oldData.autoOpr || 0)) {
+                        matchingCategory = "Auto OPR";
+                    } else if (Number(freshData.teleopOpr) !== Number(oldData.teleopOpr || 0)) {
+                        matchingCategory = "Teleop OPR";
+                    } else if (Number(freshData.avgScore) !== Number(oldData.avgScore || 0)) {
+                        matchingCategory = "Avg Points";
+                    } else if (Number(freshData.endgame) !== Number(oldData.endgame || 0)) {
+                        matchingCategory = "Endgame Points";
+                    } else if (freshData.allianceRank !== oldData.allianceRank) {
+                        matchingCategory = "Alliance Selection Rank";
+                    }
 
                     changesToProcess.push({
                         teamNumber: freshData.teamNumber,
