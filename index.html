@@ -413,7 +413,7 @@
             window.scrollTo(0, 0);
         }
 
-        // NEW: Pull Roster and Performance Metrics from FTC Scout REST Endpoint
+        // Using FTC Scout's GraphQL API Endpoint
         window.importFromFTCScout = async function() {
             const eventCode = document.getElementById('eventCodeInput').value.trim().toUpperCase();
             const fetchBtn = document.getElementById('apiFetchBtn');
@@ -426,50 +426,84 @@
             fetchBtn.innerText = "Syncing...";
             fetchBtn.disabled = true;
 
+            const graphqlQuery = {
+                query: `
+                    query GetEventTeams($code: String!) {
+                        eventByCode(code: $code) {
+                            teams {
+                                teamNumber
+                                team {
+                                    name
+                                }
+                                stats {
+                                    opr
+                                    autoOpr
+                                    teleopOpr
+                                }
+                            }
+                        }
+                    }
+                `,
+                variables: { code: eventCode }
+            };
+
             try {
-                // Fetch tournament team list directly from FTC Scout
-                const response = await fetch(`https://ftcscout.org/api/v1/events/${eventCode}/teams`);
+                const response = await fetch(`https://ftcscout.org/api/graphql`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(graphqlQuery)
+                });
                 
                 if (!response.ok) {
-                    throw new Error("Event data not found. Double check your code.");
+                    throw new Error("Server responded with an error status.");
                 }
 
-                const teamsData = await response.json();
-
-                if (teamsData.length === 0) {
-                    alert("Tournament found, but roster is empty.");
+                const result = await response.json();
+                
+                if (!result.data || !result.data.eventByCode) {
+                    alert("Event not found on FTC Scout. Ensure the code matches exactly (e.g., USCODEN).");
                     resetBtn();
                     return;
                 }
 
-                // Push fetched teams into your existing Firestore setup
-                for (const team of teamsData) {
-                    const teamNum = team.teamNumber.toString();
+                const teamsList = result.data.eventByCode.teams;
+
+                if (!teamsList || teamsList.length === 0) {
+                    alert("Event matched, but no teams are registered to it yet.");
+                    resetBtn();
+                    return;
+                }
+
+                for (const teamEntry of teamsList) {
+                    const teamNum = teamEntry.teamNumber.toString();
+                    const stats = teamEntry.stats || {};
+                    const profile = teamEntry.team || {};
                     
-                    // Extracts baseline stats if FTC Scout has already generated them for the season
-                    const autoOprValue = team.stats && team.stats.autoOpr ? parseFloat(team.stats.autoOpr.toFixed(1)) : 0;
-                    const teleopOprValue = team.stats && team.stats.teleopOpr ? parseFloat(team.stats.teleopOpr.toFixed(1)) : 0;
-                    const totalOprValue = team.stats && team.stats.opr ? parseFloat(team.stats.opr.toFixed(1)) : 0;
+                    const autoOprValue = stats.autoOpr ? parseFloat(stats.autoOpr.toFixed(1)) : 0;
+                    const teleopOprValue = stats.teleopOpr ? parseFloat(stats.teleopOpr.toFixed(1)) : 0;
+                    const totalOprValue = stats.opr ? parseFloat(stats.opr.toFixed(1)) : 0;
 
                     const teamPayload = {
                         teamNumber: teamNum,
-                        teamName: team.name || `Team ${teamNum}`,
+                        teamName: profile.name || `Team ${teamNum}`,
                         autoOpr: autoOprValue,
                         teleopOpr: teleopOprValue,
-                        avgScore: totalOprValue, // Fallbacks to total OPR for performance tracking layout
+                        avgScore: totalOprValue, 
                         endgame: 0,
-                        teamNotes: team.teamNotes || "Imported directly via FTC Scout API sync module."
+                        teamNotes: "Imported via FTC Scout GraphQL sync module."
                     };
 
                     await setDoc(doc(db, "ftc_teams", teamNum), teamPayload, { merge: true });
                 }
 
-                alert(`Successfully synchronized ${teamsData.length} teams into your Database!`);
+                alert(`Successfully synchronized ${teamsList.length} teams into your Database!`);
                 switchView('rankingsView', document.querySelectorAll('.nav-pill-btn')[0], 0);
 
             } catch (error) {
-                console.error(error);
-                alert("Error calling FTC Scout server. Make sure the event code matches exactly.");
+                console.error("GraphQL Sync Error:", error);
+                alert("Failed to reach FTC Scout. Make sure your internet connection is active.");
             } finally {
                 resetBtn();
             }
