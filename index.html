@@ -22,7 +22,7 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
             background-color: var(--bg-dark); 
             color: var(--text-main); 
-            padding: 55px 15px 105px 15px; /* Added top padding to prevent layout clash with sticky banner */
+            padding: 55px 15px 105px 15px; /* Top padding prevents layout clash with sticky banner */
         }
 
         h1 { 
@@ -154,7 +154,7 @@
             overflow: hidden;
             white-space: nowrap;
             z-index: 2000;
-            display: none; /* Toggled dynamically in JS when messages arrive */
+            display: none; 
             align-items: center;
         }
         .ticker-text {
@@ -472,15 +472,15 @@
         const teamsCollection = collection(db, "ftc_teams");
 
         let localTeamsArray = [];
-        let historicalTeamsMap = new Map(); // Track metrics state to detect specific categories updated
-        let observedVisibleTeams = new Set(); // Tracks rows currently on screen
+        let historicalTeamsMap = new Map(); 
+        let observedVisibleTeams = new Set(); 
         let activeViewId = 'rankingsView';
         let bannerQueue = [];
         let bannerIsRunning = false;
 
         const GEMINI_API_KEY = "AQ.Ab8RN6Ijygst1gJWXfEkTnL5XdRMdEdwR2xlreF2Sm-npBWemw";
 
-        // Setup DOM Visibility Tracker Setup (Intersection Observer)
+        // Fixed Mobile-Friendly Visibility Tracker (Checks bounding client rectangles as a backup to IntersectionObserver)
         const rowVisibilityObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 const teamNum = entry.target.getAttribute('data-team');
@@ -490,7 +490,18 @@
                     observedVisibleTeams.delete(teamNum);
                 }
             });
-        }, { threshold: 0.1 });
+        }, { threshold: 0.05, rootMargin: "0px 0px -10px 0px" });
+
+        function isElementInViewport(el) {
+            if (!el) return false;
+            const rect = el.getBoundingClientRect();
+            return (
+                rect.top >= 0 &&
+                rect.left >= 0 &&
+                rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+                rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+            );
+        }
 
         // Dynamic Tab Routing Switch
         window.switchView = function(viewId, clickedButton, indexPosition) {
@@ -607,12 +618,10 @@
             tickerTextElement.innerHTML = `LIVE FEED: Team <span>#${item.teamNumber} (${item.teamName})</span> updated metrics category: <span>[${item.category}]</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`;
             bannerContainer.style.display = 'flex';
 
-            // Restart animation track timeline mechanics
             tickerTextElement.style.animation = 'none';
-            tickerTextElement.offsetHeight; // Trigger layout reflow
+            tickerTextElement.offsetHeight; 
             tickerTextElement.style.animation = 'scrollTicker 10s linear 1';
 
-            // Wait until scrolling transition wraps completely before drawing next item
             setTimeout(() => {
                 processNextBannerItem();
             }, 10000);
@@ -628,7 +637,6 @@
                     const freshData = change.doc.data();
                     const oldData = historicalTeamsMap.get(freshData.teamNumber) || {};
                     
-                    // Identify which statistical field or metric mutated
                     let matchingCategory = "General Profile Update";
                     if (freshData.autoOpr !== oldData.autoOpr) matchingCategory = "Auto OPR";
                     else if (freshData.teleopOpr !== oldData.teleopOpr) matchingCategory = "Teleop OPR";
@@ -662,21 +670,23 @@
             renderTable();
             isInitialLoad = false;
 
-            // Trigger animations after elements are rendered in DOM
-            changesToProcess.forEach(change => {
-                const targetRow = document.getElementById(`row-${change.teamNumber}`);
-                const isCurrentlyVisible = observedVisibleTeams.has(change.teamNumber) && (activeViewId === 'rankingsView');
+            // Trigger animations safely handling mobile display modes
+            setTimeout(() => {
+                changesToProcess.forEach(change => {
+                    const targetRow = document.getElementById(`row-${change.teamNumber}`);
+                    const isVisibleViaObserver = observedVisibleTeams.has(change.teamNumber);
+                    const isVisibleViaFallback = isElementInViewport(targetRow);
+                    const isCurrentlyVisible = (isVisibleViaObserver || isVisibleViaFallback) && (activeViewId === 'rankingsView');
 
-                if (targetRow && isCurrentlyVisible) {
-                    // Flash orange 3 times if onscreen
-                    targetRow.classList.remove('flash-notify');
-                    targetRow.offsetHeight; // Flush styling pipeline frame step trigger
-                    targetRow.classList.add('flash-notify');
-                } else {
-                    // Trigger scrolling notification banner across the top if offscreen or on other tab
-                    triggerTickerBanner(change.teamNumber, change.teamName, change.category);
-                }
-            });
+                    if (targetRow && isCurrentlyVisible) {
+                        targetRow.classList.remove('flash-notify');
+                        targetRow.offsetHeight; 
+                        targetRow.classList.add('flash-notify');
+                    } else {
+                        triggerTickerBanner(change.teamNumber, change.teamName, change.category);
+                    }
+                });
+            }, 50);
         });
 
         window.loadTeams = function() {
@@ -696,7 +706,6 @@
 
             const tbody = document.getElementById('teamsTableBody');
             
-            // Clean up old visibility observers before modifying layout mapping nodes
             document.querySelectorAll('tr[data-team]').forEach(row => rowVisibilityObserver.unobserve(row));
             tbody.innerHTML = '';
 
@@ -747,8 +756,6 @@
                     </td>
                 `;
                 tbody.appendChild(tr);
-                
-                // Track row viewport presence
                 rowVisibilityObserver.observe(tr);
             });
         }
