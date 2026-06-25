@@ -41,22 +41,6 @@
         .app-view { display: none; }
         .app-view.active-view { display: block; }
 
-        /* API Sync Panel styling */
-        .api-panel {
-            background: linear-gradient(135deg, #1f113a 0%, #150d26 100%);
-            padding: 20px;
-            border-radius: 16px;
-            border: 2px dashed var(--primary);
-            margin-bottom: 25px;
-        }
-        .api-inline-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 5px;
-        }
-        .api-inline-group input { flex: 1; }
-        .api-inline-group button { margin-top: 0; width: auto; white-space: nowrap; }
-
         /* Form Layout */
         form { 
             background: var(--bg-card); 
@@ -293,18 +277,8 @@
     <h1><span style="color:var(--text-main)">5115</span> Scouter</h1>
 
     <div id="logView" class="app-view">
-        
-        <div class="api-panel">
-            <h2>Auto-Fill Event Roster</h2>
-            <label for="eventCodeInput">FTC Scout Event Code</label>
-            <div class="api-inline-group">
-                <input type="text" id="eventCodeInput" placeholder="e.g., USCODEN" style="text-transform: uppercase;">
-                <button type="button" id="apiFetchBtn" onclick="importFromFTCScout()">Fetch Event Data</button>
-            </div>
-        </div>
-
         <form id="teamForm">
-            <h2>Log / Edit Team Info Manually</h2>
+            <h2>Log / Edit Team Info</h2>
             <div class="form-grid">
                 <div class="form-group">
                     <label for="teamNumber">Team Number</label>
@@ -383,6 +357,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, doc, setDoc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
+        // Verified working credentials for the 5115 project database
         const firebaseConfig = {
             apiKey: "AIzaSyAcPbzSt-iY8RVsYdZpvIfAAS86CwSYa5Q",
             authDomain: "ftc-team-scouter.firebaseapp.com",
@@ -413,117 +388,7 @@
             window.scrollTo(0, 0);
         }
 
-        // Using FTC Scout's GraphQL API Endpoint wrapped through a public CORS Proxy
-        window.importFromFTCScout = async function() {
-            const eventCode = document.getElementById('eventCodeInput').value.trim().toUpperCase();
-            const fetchBtn = document.getElementById('apiFetchBtn');
-
-            if (!eventCode) {
-                alert("Please type a valid tournament event code first.");
-                return;
-            }
-
-            fetchBtn.innerText = "Syncing...";
-            fetchBtn.disabled = true;
-
-            const graphqlQuery = {
-                query: `
-                    query GetEventTeams($code: String!) {
-                        eventByCode(code: $code) {
-                            teams {
-                                teamNumber
-                                team {
-                                    name
-                                }
-                                stats {
-                                    opr
-                                    autoOpr
-                                    teleopOpr
-                                }
-                            }
-                        }
-                    }
-                `,
-                variables: { code: eventCode }
-            };
-
-            try {
-                // Prefixed with a reliable, open proxy to allow request from github.io domains without getting dropped by browser CORS rules
-                const proxyUrl = "https://cors-anywhere.herokuapp.com/";
-                const targetUrl = "https://ftcscout.org/api/graphql";
-
-                const response = await fetch(proxyUrl + targetUrl, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "X-Requested-With": "XMLHttpRequest"
-                    },
-                    body: JSON.stringify(graphqlQuery)
-                });
-                
-                if (!response.ok) {
-                    if (response.status === 403) {
-                        alert("Proxy access is temporary locked. Please visit: https://cors-anywhere.herokuapp.com/ and tap 'Request temporary access' to unlock live fetching on this device.");
-                        resetBtn();
-                        return;
-                    }
-                    throw new Error("Server responded with an error status.");
-                }
-
-                const result = await response.json();
-                
-                if (!result.data || !result.data.eventByCode) {
-                    alert("Event not found on FTC Scout. Ensure the code matches exactly (e.g., USCODEN).");
-                    resetBtn();
-                    return;
-                }
-
-                const teamsList = result.data.eventByCode.teams;
-
-                if (!teamsList || teamsList.length === 0) {
-                    alert("Event matched, but no teams are registered to it yet.");
-                    resetBtn();
-                    return;
-                }
-
-                for (const teamEntry of teamsList) {
-                    const teamNum = teamEntry.teamNumber.toString();
-                    const stats = teamEntry.stats || {};
-                    const profile = teamEntry.team || {};
-                    
-                    const autoOprValue = stats.autoOpr ? parseFloat(stats.autoOpr.toFixed(1)) : 0;
-                    const teleopOprValue = stats.teleopOpr ? parseFloat(stats.teleopOpr.toFixed(1)) : 0;
-                    const totalOprValue = stats.opr ? parseFloat(stats.opr.toFixed(1)) : 0;
-
-                    const teamPayload = {
-                        teamNumber: teamNum,
-                        teamName: profile.name || `Team ${teamNum}`,
-                        autoOpr: autoOprValue,
-                        teleopOpr: teleopOprValue,
-                        avgScore: totalOprValue, 
-                        endgame: 0,
-                        teamNotes: "Imported via FTC Scout GraphQL sync module."
-                    };
-
-                    await setDoc(doc(db, "ftc_teams", teamNum), teamPayload, { merge: true });
-                }
-
-                alert(`Successfully synchronized ${teamsList.length} teams into your Database!`);
-                switchView('rankingsView', document.querySelectorAll('.nav-pill-btn')[0], 0);
-
-            } catch (error) {
-                console.error("GraphQL Sync Error:", error);
-                alert("Failed to reach FTC Scout or Proxy endpoint. Verify internet connectivity.");
-            } finally {
-                resetBtn();
-            }
-
-            function resetBtn() {
-                fetchBtn.innerText = "Fetch Event Data";
-                fetchBtn.disabled = false;
-            }
-        };
-
+        // Form Submit Handler (Saves or Overwrites Team Records)
         document.getElementById('teamForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const teamNum = document.getElementById('teamNumber').value.trim();
@@ -540,9 +405,11 @@
             await setDoc(doc(db, "ftc_teams", teamNum), teamData, { merge: true });
             document.getElementById('teamForm').reset();
             
+            // Redirect smoothly back to leaderboard view upon entry complete
             switchView('rankingsView', document.querySelectorAll('.nav-pill-btn')[0], 0);
         });
 
+        // Inline live Alliance Selection Ranking Sync Function
         window.updateAllianceRank = async function(teamNum, newRank) {
             const rankVal = parseInt(newRank);
             await updateDoc(doc(db, "ftc_teams", teamNum), {
@@ -550,6 +417,7 @@
             });
         }
 
+        // Strategy Match Notes Auto-saving system
         window.saveTeamNotes = async function(teamNum, textareaElement) {
             const notesText = textareaElement.value.trim();
             const button = textareaElement.nextElementSibling;
@@ -563,11 +431,13 @@
             setTimeout(() => { button.innerText = "Save Notes"; }, 1500);
         }
 
+        // Open and close match commentary panels
         window.toggleNotesDrawer = function(teamNum) {
             const drawer = document.getElementById(`notes-${teamNum}`);
             drawer.classList.toggle('open');
         }
 
+        // Real-time Cloud Data Stream Sync Listener Engine
         onSnapshot(teamsCollection, (snapshot) => {
             localTeamsArray = [];
             snapshot.forEach((doc) => {
@@ -586,6 +456,7 @@
             renderTable();
         }
 
+        // HTML Dynamic DOM Generator and Data Aggregator
         function renderTable() {
             const sortBy = document.getElementById('sortBy').value;
             
