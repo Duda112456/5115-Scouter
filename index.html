@@ -219,18 +219,28 @@
             cursor: pointer;
             font-size: 0.9rem;
             font-weight: 700;
-            display: flex;
+            
+            /* Enhanced Flexbox alignment centering fixes */
+            display: inline-flex;
             align-items: center;
+            justify-content: center;
+            align-content: center;
+            
             gap: 8px;
             position: relative;
             z-index: 2; /* Sits cleanly directly on top of sliding bubble layer */
             transition: color 0.25s ease;
+            width: auto;
+            margin: 0;
+            line-height: 1;
         }
 
         .nav-pill-btn svg {
             width: 18px;
             height: 18px;
             fill: currentColor;
+            display: block;
+            flex-shrink: 0;
         }
 
         .nav-pill-btn.active-tab {
@@ -458,7 +468,6 @@
             tbody.innerHTML = '';
 
             localTeamsArray.forEach((team) => {
-                // Desktop wrapper or standalone mobile card block rendering
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td data-label="Alliance Rank">
