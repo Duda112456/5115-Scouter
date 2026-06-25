@@ -165,20 +165,68 @@
             border: 1px solid var(--border-color);
         }
         .notes-container.open { display: block; }
+        
+        /* AI Summary Display Box styling */
+        .ai-summary-display {
+            background: rgba(255, 115, 0, 0.07);
+            border-left: 3px solid var(--primary);
+            padding: 10px 14px;
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 12px;
+            font-size: 0.88rem;
+            color: var(--text-main);
+            line-height: 1.4;
+        }
+        .ai-summary-display strong {
+            color: var(--primary);
+            display: block;
+            margin-bottom: 4px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .ai-summary-display ul {
+            padding-left: 16px;
+            margin-top: 4px;
+        }
+
         .notes-textarea {
             width: 100%;
-            height: 70px;
+            height: 80px;
             resize: none;
             font-size: 0.9rem;
             padding: 8px;
             margin-bottom: 8px;
         }
+        .notes-button-group {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
         .notes-save-btn {
-            padding: 8px 12px;
+            padding: 8px 14px;
             font-size: 0.85rem;
             width: auto;
-            float: right;
             margin-top: 0;
+        }
+        .notes-ai-btn {
+            background: #3a1570;
+            border: 1px solid #5a25a3;
+            padding: 8px 14px;
+            font-size: 0.85rem;
+            width: auto;
+            margin-top: 0;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .notes-ai-btn:hover {
+            background: #4c1d93;
+        }
+        .notes-ai-btn svg {
+            width: 14px;
+            height: 14px;
+            fill: #fff;
         }
         .notes-clear { clear: both; }
 
@@ -365,6 +413,9 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, doc, setDoc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        
+        // Import official client-side Google AI SDK module
+        import { GoogleGenAI } from "https://esm.run/@google/genai";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAcPbzSt-iY8RVsYdZpvIfAAS86CwSYa5Q",
@@ -382,7 +433,10 @@
 
         let localTeamsArray = [];
 
-        // Dynamic Tab Routing Switch & Animated Slider Calculator
+        // Integrated Google Gemini API Key configuration
+        const GEMINI_API_KEY = "AQ.Ab8RN6Ijygst1gJWXfEkTnL5XdRMdEdwR2xlreF2Sm-npBWemw";
+
+        // Dynamic Tab Routing Switch
         window.switchView = function(viewId, clickedButton, indexPosition) {
             document.querySelectorAll('.app-view').forEach(view => view.classList.remove('active-view'));
             document.querySelectorAll('.nav-pill-btn').forEach(btn => btn.classList.remove('active-tab'));
@@ -412,11 +466,9 @@
 
             await setDoc(doc(db, "ftc_teams", teamNum), teamData, { merge: true });
             document.getElementById('teamForm').reset();
-            
             switchView('rankingsView', document.querySelectorAll('.nav-pill-btn')[0], 0);
         });
 
-        // Inline live Alliance Selection Ranking Sync Function
         window.updateAllianceRank = async function(teamNum, newRank) {
             const rankVal = parseInt(newRank);
             await updateDoc(doc(db, "ftc_teams", teamNum), {
@@ -424,7 +476,7 @@
             });
         }
 
-        // Strategy Match Notes Auto-saving system
+        // Save original match commentary text box raw data
         window.saveTeamNotes = async function(teamNum, textareaElement) {
             const notesText = textareaElement.value.trim();
             const button = textareaElement.nextElementSibling;
@@ -438,7 +490,48 @@
             setTimeout(() => { button.innerText = "Save Notes"; }, 1500);
         }
 
-        // Open and close match commentary panels
+        // Real-Time Gemini AI Summary Engine Module
+        window.generateAiSummary = async function(teamNum, btnElement) {
+            const textarea = document.getElementById(`textarea-${teamNum}`);
+            const rawNotes = textarea.value.trim();
+
+            if (!rawNotes) {
+                alert("Please write or log some basic team notes first before attempting to summarize!");
+                return;
+            }
+
+            const originalText = btnElement.innerHTML;
+            btnElement.innerHTML = `Running AI...`;
+            btnElement.disabled = true;
+
+            try {
+                // Initialize the official Google Gen AI SDK
+                const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+                
+                // Prompt optimized for concise FTC Robotics competition strategy takeaways
+                const prompt = `You are a scouting assistant for FTC Team 5115. Summarize these raw scout match notes into short bullet points (max 3 bullets). Focus strictly on robot performance, drive team behavior, autonomous capabilities, errors, or alliance compatibility. Output raw HTML bullets (<ul> and <li> tags) only. Do not add intro conversational text or headers. Raw Notes: "${rawNotes}"`;
+
+                const response = await ai.models.generateContent({
+                    model: 'gemini-2.5-flash',
+                    contents: prompt,
+                });
+
+                const cleanHtmlSummary = response.text.trim();
+
+                // Store AI summary output cleanly to a dedicated database field
+                await updateDoc(doc(db, "ftc_teams", teamNum), {
+                    aiSummary: cleanHtmlSummary
+                });
+
+            } catch (err) {
+                console.error("Gemini Engine Failure:", err);
+                alert("AI generation failed. Check your API token limits or network connection status.");
+            } finally {
+                btnElement.innerHTML = originalText;
+                btnElement.disabled = false;
+            }
+        }
+
         window.toggleNotesDrawer = function(teamNum) {
             const drawer = document.getElementById(`notes-${teamNum}`);
             drawer.classList.toggle('open');
@@ -453,6 +546,7 @@
                 if (data.autoOpr === undefined) data.autoOpr = 0;
                 if (data.teleopOpr === undefined) data.teleopOpr = 0;
                 if (data.teamNotes === undefined) data.teamNotes = ""; 
+                if (data.aiSummary === undefined) data.aiSummary = ""; 
 
                 localTeamsArray.push(data);
             });
@@ -463,7 +557,6 @@
             renderTable();
         }
 
-        // HTML Dynamic DOM Generator and Data Aggregator
         function renderTable() {
             const sortBy = document.getElementById('sortBy').value;
             
@@ -480,6 +573,12 @@
 
             localTeamsArray.forEach((team) => {
                 const tr = document.createElement('tr');
+                
+                // If an AI summary is saved in the database, display it right inside the drawer bubble
+                const summaryHtml = team.aiSummary 
+                    ? `<div class="ai-summary-display"><strong>⚡ AI Scouting Takeaways</strong>${team.aiSummary}</div>`
+                    : '';
+
                 tr.innerHTML = `
                     <td data-label="Alliance Rank">
                         <input type="number" class="alliance-input" 
@@ -502,8 +601,20 @@
                             View/Edit Notes
                         </button>
                         <div class="notes-container" id="notes-${team.teamNumber}">
-                            <textarea class="notes-textarea" placeholder="Type strategy notes here...">${team.teamNotes}</textarea>
-                            <button class="notes-save-btn" onclick="saveTeamNotes('${team.teamNumber}', this.previousElementSibling)">Save Notes</button>
+                            
+                            ${summaryHtml}
+
+                            <textarea class="notes-textarea" id="textarea-${team.teamNumber}" placeholder="Type strategy or raw pit scouting notes here...">${team.teamNotes}</textarea>
+                            
+                            <div class="notes-button-group">
+                                <button class="notes-ai-btn" onclick="generateAiSummary('${team.teamNumber}', this)">
+                                    <svg viewBox="0 0 24 24">
+                                        <path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7zm2.85 11.1l-.85.6V16h-4v-2.3l-.85-.6A4.997 4.997 0 0 1 7 9c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.63-.8 3.16-2.15 4.1z"/>
+                                    </svg>
+                                    AI Summarize
+                                </button>
+                                <button class="notes-save-btn" onclick="saveTeamNotes('${team.teamNumber}', document.getElementById('textarea-${team.teamNumber}'))">Save Notes</button>
+                            </div>
                             <div class="notes-clear"></div>
                         </div>
                     </td>
