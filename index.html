@@ -153,6 +153,11 @@
         }
         .btn-secondary:hover { background: #312054; }
 
+        .btn-success {
+            background: var(--success);
+        }
+        .btn-success:hover { background: #218838; }
+
         .btn-danger {
             background: var(--danger);
         }
@@ -341,19 +346,6 @@
             width: auto;
             margin-top: 0;
         }
-        .notes-ai-btn {
-            background: #3a1570;
-            border: 1px solid #5a25a3;
-            padding: 8px 14px;
-            font-size: 0.85rem;
-            width: auto;
-            margin-top: 0;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .notes-ai-btn:hover { background: #4c1d93; }
-        .notes-ai-btn svg { width: 14px; height: 14px; fill: #fff; }
         
         .profile-delete-btn {
             background: var(--danger);
@@ -494,7 +486,8 @@
             </div>
             <select id="compSelector" onchange="changeActiveCompetitionContext(this.value)" style="padding: 6px 12px; font-size: 0.85rem; border-radius: 20px;">
                 </select>
-            <button class="btn-secondary" onclick="archiveCurrentCompetition()" style="padding: 6px 12px; font-size: 0.85rem; border-radius: 20px; width: auto; margin-top:0;">Archive Event</button>
+            <button id="archiveBtn" class="btn-secondary" onclick="archiveCurrentCompetition()" style="padding: 6px 12px; font-size: 0.85rem; border-radius: 20px; width: auto; margin-top:0;">Archive Event</button>
+            <button id="unarchiveBtn" class="btn-success" onclick="unarchiveCurrentCompetition()" style="padding: 6px 12px; font-size: 0.85rem; border-radius: 20px; width: auto; margin-top:0; display:none;">Unarchive Event</button>
         </div>
     </div>
 
@@ -697,14 +690,20 @@
             if (comp) {
                 document.getElementById('currentCompDisplay').innerText = comp.name;
                 const frozenBadge = document.getElementById('frozenBadge');
+                const archiveBtn = document.getElementById('archiveBtn');
+                const unarchiveBtn = document.getElementById('unarchiveBtn');
                 
                 if (comp.isArchived) {
                     frozenBadge.style.display = "inline-block";
+                    archiveBtn.style.display = "none";
+                    unarchiveBtn.style.display = "inline-block";
                     document.getElementById('formHeaderTitle').innerText = "Tournament Locked (Archived Mode)";
                     document.getElementById('formSubmitBtn').disabled = true;
                     document.getElementById('formSubmitBtn').innerText = "Locked";
                 } else {
                     frozenBadge.style.display = "none";
+                    archiveBtn.style.display = "inline-block";
+                    unarchiveBtn.style.display = "none";
                     document.getElementById('formHeaderTitle').innerText = "Log / Edit Team Info";
                     document.getElementById('formSubmitBtn').disabled = false;
                     document.getElementById('formSubmitBtn').innerText = "Save Entry";
@@ -728,6 +727,22 @@
             if (confirm(`Are you sure you want to archive "${comp.name}"? This freezes performance data edits from this tournament while preserving career calculations.`)) {
                 await updateDoc(doc(db, "competitions", activeCompetitionId), { isArchived: true });
                 comp.isArchived = true;
+                repopulateCompetitionDropdownSelector();
+                updateCompDisplayState();
+                renderTable();
+            }
+        }
+
+        window.unarchiveCurrentCompetition = async function() {
+            const comp = competitionsMap.get(activeCompetitionId);
+            if (!comp) return;
+            if (!comp.isArchived) {
+                alert("This competition profile is already active!");
+                return;
+            }
+            if (confirm(`Are you sure you want to unarchive "${comp.name}"? This will reactivate editing capabilities for this event.`)) {
+                await updateDoc(doc(db, "competitions", activeCompetitionId), { isArchived: false });
+                comp.isArchived = false;
                 repopulateCompetitionDropdownSelector();
                 updateCompDisplayState();
                 renderTable();
@@ -873,53 +888,41 @@
             });
         }
 
-        window.saveTeamNotes = async function(teamNum, textareaElement) {
+        window.saveTeamNotesAndAutoSummarize = async function(teamNum, textareaElement) {
             const notesText = textareaElement.value.trim();
             const button = textareaElement.nextElementSibling;
-            button.innerText = "Saving...";
+            
+            button.innerText = "Saving & Summarizing...";
+            button.disabled = true;
             
             const entryId = `${activeCompetitionId}_${teamNum}`;
+            
+            // 1. Immediately save the raw notes text
             await updateDoc(doc(db, "team_entries", entryId), {
                 teamNotes: notesText
             });
-            
+
+            // 2. Automatically trigger AI summary generation if text exists
+            if (notesText) {
+                try {
+                    const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+                    const prompt = `You are a scouting assistant for FTC Team 5115. Summarize these raw scout match notes into short bullet points (max 3 bullets). Focus strictly on robot performance, autonomous capabilities, or bugs. Output raw HTML bullets (<ul> and <li> tags) only. Raw Notes: "${notesText}"`;
+
+                    const response = await ai.models.generateContent({
+                        model: 'gemini-2.5-flash',
+                        contents: prompt,
+                    });
+
+                    const cleanHtmlSummary = response.text.trim();
+                    await updateDoc(doc(db, "team_entries", entryId), { aiSummary: cleanHtmlSummary });
+                } catch (err) {
+                    console.error("Gemini Failure:", err);
+                }
+            }
+
             button.innerText = "Saved!";
+            button.disabled = false;
             setTimeout(() => { button.innerText = "Save Notes"; }, 1500);
-        }
-
-        window.generateAiSummary = async function(teamNum, btnElement) {
-            const textarea = document.getElementById(`textarea-${teamNum}`);
-            const rawNotes = textarea.value.trim();
-
-            if (!rawNotes) {
-                alert("Please add notes first before running AI aggregation!");
-                return;
-            }
-
-            const originalText = btnElement.innerHTML;
-            btnElement.innerHTML = `Running AI...`;
-            btnElement.disabled = true;
-
-            try {
-                const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
-                const prompt = `You are a scouting assistant for FTC Team 5115. Summarize these raw scout match notes into short bullet points (max 3 bullets). Focus strictly on robot performance, autonomous capabilities, or bugs. Output raw HTML bullets (<ul> and <li> tags) only. Raw Notes: "${rawNotes}"`;
-
-                const response = await ai.models.generateContent({
-                    model: 'gemini-2.5-flash',
-                    contents: prompt,
-                });
-
-                const cleanHtmlSummary = response.text.trim();
-                const entryId = `${activeCompetitionId}_${teamNum}`;
-                await updateDoc(doc(db, "team_entries", entryId), { aiSummary: cleanHtmlSummary });
-
-            } catch (err) {
-                console.error("Gemini Failure:", err);
-                alert("AI processing sequence failure.");
-            } finally {
-                btnElement.innerHTML = originalText;
-                btnElement.disabled = false;
-            }
         }
 
         window.toggleNotesDrawer = function(teamNum) {
@@ -1132,8 +1135,7 @@
                             <div class="notes-button-group">
                                 ${ !team.isCareerCompiledMock ? `
                                     <button class="profile-delete-btn" onclick="deleteTeamProfileData('${team.teamNumber}')">Delete Entry</button>
-                                    <button class="notes-ai-btn" onclick="generateAiSummary('${team.teamNumber}', this)" ${inputsDisabledAttr}>AI Summarize</button>
-                                    <button class="notes-save-btn" onclick="saveTeamNotes('${team.teamNumber}', document.getElementById('textarea-${team.teamNumber}'))" ${inputsDisabledAttr}>Save Notes</button>
+                                    <button class="notes-save-btn" onclick="saveTeamNotesAndAutoSummarize('${team.teamNumber}', document.getElementById('textarea-${team.teamNumber}'))" ${inputsDisabledAttr}>Save Notes</button>
                                 ` : `<span style="font-size:0.75rem; color:var(--text-muted); padding:8px;">Notes display aggregated summary tracking mode. Check individual event profiles to modify source values.</span>` }
                             </div>
                             <div class="notes-clear"></div>
