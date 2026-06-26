@@ -255,29 +255,53 @@
             margin-top: -6px;
             margin-bottom: 15px;
             background: var(--bg-card);
-            padding: 12px;
+            padding: 16px;
             border-radius: 12px;
             border: 1px solid var(--primary);
         }
         .notes-container.open { display: block; }
 
+        /* AI Summary Card Layout Box */
+        .ai-summary-display {
+            background: rgba(255, 115, 0, 0.08);
+            border-left: 3px solid var(--primary);
+            padding: 12px;
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 14px;
+            font-size: 0.88rem;
+            color: var(--text-main);
+        }
+        .ai-summary-display strong {
+            color: var(--primary);
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .ai-summary-display ul {
+            padding-left: 16px;
+        }
+
+        /* Fixed Heights and Sizing Elements */
         .notes-textarea {
             width: 100%;
-            height: 70px;
-            resize: none;
-            font-size: 0.85rem;
-            padding: 6px;
-            margin-bottom: 6px;
+            height: 160px; /* Increased height significantly so text layout is readable */
+            resize: vertical;
+            font-size: 0.9rem;
+            padding: 10px;
+            margin-bottom: 12px;
             background-color: var(--bg-dark);
         }
         .notes-button-group {
             display: flex;
-            gap: 6px;
-            justify-content: flex-end;
+            gap: 10px;
+            flex-wrap: wrap;
         }
-        .notes-save-btn { padding: 6px 12px; font-size: 0.8rem; width: auto; margin-top: 0; }
-        .notes-close-btn { background: #23163d; border: 1px solid var(--border-color); color: var(--text-main); padding: 6px 12px; font-size: 0.8rem; width: auto; margin-top: 0; }
-        .profile-delete-btn { background: var(--danger); padding: 6px 12px; font-size: 0.8rem; width: auto; margin-top: 0; margin-right: auto; }
+        /* Buttons inside notes restored to normal layouts */
+        .notes-save-btn { width: 100%; padding: 12px; font-size: 0.9rem; margin-top: 0; }
+        .notes-close-btn { background: #23163d; border: 1px solid var(--border-color); color: var(--text-main); padding: 10px 16px; font-size: 0.85rem; width: auto; margin-top: 0; }
+        .profile-delete-btn { background: var(--danger); padding: 10px 16px; font-size: 0.85rem; width: auto; margin-top: 0; margin-right: auto; }
 
         /* Bottom Pill Bar Alignment Selection */
         .sketch-navbar-container {
@@ -386,6 +410,7 @@
             .drawer-row-wrapper { display: table-row; }
             .drawer-fullwidth-cell { padding: 0 15px 15px 15px; border-top: none; background: rgba(10, 5, 20, 0.1); }
             .notes-container { margin-top: 0; margin-bottom: 0; background: var(--bg-dark); border-radius: 8px; border: 1px solid var(--border-color); }
+            .notes-save-btn { width: auto; min-width: 150px; padding: 10px 24px; margin-left: auto; }
         }
     </style>
 </head>
@@ -515,9 +540,14 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, doc, setDoc, onSnapshot, updateDoc, getDocs, getDoc, deleteDoc, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        
+        // Import Google Gen AI SDK for text summary insights 
+        import { GoogleGenAI } from "https://esm.run/@google/genai-web";
+
+        const SCOUTER_API_KEY = "AIzaSyAcPbzSt-iY8RVsYdZpvIfAAS86CwSYa5Q";
 
         const firebaseConfig = {
-            apiKey: "AIzaSyAcPbzSt-iY8RVsYdZpvIfAAS86CwSYa5Q",
+            apiKey: SCOUTER_API_KEY,
             authDomain: "ftc-team-scouter.firebaseapp.com",
             projectId: "ftc-team-scouter",
             storageBucket: "ftc-team-scouter.firebasestorage.app",
@@ -759,7 +789,7 @@
             });
         }
 
-        window.saveTeamNotes = async function(teamNum, textareaElement) {
+        window.saveTeamNotesAndAutoSummarize = async function(teamNum, textareaElement) {
             const notesText = textareaElement.value.trim();
             const button = textareaElement.nextElementSibling.nextElementSibling;
             
@@ -768,6 +798,22 @@
             
             const entryId = `${activeCompetitionId}_${teamNum}`;
             await updateDoc(doc(db, "team_entries", entryId), { teamNotes: notesText });
+
+            if (notesText) {
+                try {
+                    const aiInstance = new GoogleGenAI({ apiKey: SCOUTER_API_KEY });
+                    const response = await aiInstance.models.generateContent({
+                        model: "gemini-2.5-flash",
+                        contents: `Summarize these robotics scouting notes into 1 to 3 distinct bullet points for placement inside a tiny UI dashboard drawer layout. Output standard HTML <ul> format only. Text: "${notesText}"`
+                    });
+                    
+                    if (response && response.text) {
+                        await updateDoc(doc(db, "team_entries", entryId), { aiSummary: response.text.trim() });
+                    }
+                } catch (err) {
+                    console.error("AI Generation error:", err);
+                }
+            }
 
             button.innerText = "Saved Context";
             button.disabled = false;
@@ -844,6 +890,7 @@
                 
                 const inputsDisabledAttr = (isArchived || team.isCareerCompiledMock) ? "disabled" : "";
                 const cleanNotesString = team.teamNotes || "";
+                const summaryHtml = team.aiSummary ? `<div class="ai-summary-display"><strong>⚡ AI Scouting Takeaways</strong>${team.aiSummary}</div>` : '';
 
                 tr.innerHTML = `
                     <td data-label="Team Rank"><input type="number" class="alliance-input" value="${team.allianceRank === 999 ? '' : team.allianceRank}" onchange="updateAllianceRank('${team.teamNumber}', this.value)" ${inputsDisabledAttr}></td>
@@ -864,11 +911,12 @@
                 drawerTr.innerHTML = `
                     <td colspan="9" class="drawer-fullwidth-cell">
                         <div class="notes-container" id="notes-${team.teamNumber}">
+                            ${summaryHtml}
                             <textarea class="notes-textarea" placeholder="Enter custom observations here...">${cleanNotesString}</textarea>
                             <div class="notes-button-group">
                                 ${!team.isCareerCompiledMock ? `<button class="profile-delete-btn" onclick="deleteTeamProfileData('${team.teamNumber}')">Delete Profile</button>` : ''}
                                 <button class="notes-close-btn" onclick="toggleNotesDrawer('${team.teamNumber}')">Close</button>
-                                <button class="notes-save-btn" onclick="saveTeamNotes('${team.teamNumber}', this.parentNode.previousElementSibling)" ${inputsDisabledAttr}>Save Notes</button>
+                                <button class="notes-save-btn" onclick="saveTeamNotesAndAutoSummarize('${team.teamNumber}', this.parentNode.previousElementSibling)" ${inputsDisabledAttr}>Save Notes</button>
                             </div>
                         </div>
                     </td>
