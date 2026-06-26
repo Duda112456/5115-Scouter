@@ -448,10 +448,12 @@
             tbody { display: table-row-group; }
             tr { display: table-row; background: none; margin-bottom: 0; border: none; }
             tr:hover { background-color: rgba(43, 28, 71, 0.3); }
-            th, td { display: table-cell; padding: 14px; text-align: left; vertical-align: middle; border-bottom: 1px solid var(--border-color); }
+            
+            /* Reset mobile layout rules so table nodes display natively on desktop */
+            th, td { display: table-cell; padding: 14px; text-align: left; vertical-align: middle; border-bottom: 1px solid var(--border-color); width: auto; }
             th { background-color: rgba(21, 13, 38, 0.6); color: var(--primary); font-weight: 700; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px; }
             
-            /* Center numeric details columns cleanly */
+            /* Center elements properly on desktop rows without layouts breaking */
             th:nth-child(1), td:nth-child(1),
             th:nth-child(4), td:nth-child(4),
             th:nth-child(5), td:nth-child(5),
