@@ -1,4 +1,6 @@
-<!DOCTYPE html><html lang="en"><head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>5115 Scouter Dashboard Pro</title>
@@ -300,7 +302,6 @@
             margin-top: -10px;
             margin-bottom: 20px;
             background: var(--bg-card);
-            padding: 166px 16px 16px 16px; /* standard box padding balance */
             padding: 16px;
             border-radius: 16px;
             border: 1px solid var(--primary);
@@ -489,7 +490,9 @@
             .drawer-fullwidth-cell { display: table-cell; padding: 0 20px 20px 20px; border-top: none; background: rgba(10, 5, 20, 0.15); }
             .notes-container { margin-top: 0; margin-bottom: 0; background: var(--bg-dark); border-radius: 10px; border: 1px solid var(--border-color); }
         }
-    </style></head><body>
+    </style>
+</head>
+<body>
 
     <div class="ticker-banner-wrap" id="tickerBanner">
         <div class="ticker-text" id="tickerText"></div>
@@ -509,7 +512,7 @@
                 <button id="viewCareerToggle" class="toggle-btn" onclick="setStatsScope('career')">Career Stats</button>
             </div>
             <select id="compSelector" onchange="changeActiveCompetitionContext(this.value)" style="padding: 6px 12px; font-size: 0.85rem; border-radius: 20px;">
-            </select>
+                </select>
             <button id="newCompBtn" class="btn-success" onclick="createNewCompetitionPrompt()" style="padding: 6px 14px; font-size: 0.85rem; border-radius: 20px; width: auto; margin-top:0;">+ New Event</button>
             <button id="archiveBtn" class="btn-secondary" onclick="archiveCurrentCompetition()" style="padding: 6px 12px; font-size: 0.85rem; border-radius: 20px; width: auto; margin-top:0;">Archive Event</button>
             <button id="unarchiveBtn" class="btn-success" onclick="unarchiveCurrentCompetition()" style="padding: 6px 12px; font-size: 0.85rem; border-radius: 20px; width: auto; margin-top:0; display:none;">Unarchive Event</button>
@@ -578,7 +581,7 @@
                 </tr>
             </thead>
             <tbody id="teamsTableBody">
-            </tbody>
+                </tbody>
         </table>
     </div>
 
@@ -600,6 +603,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, doc, setDoc, onSnapshot, updateDoc, getDocs, getDoc, deleteDoc, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { GoogleGenAI } from "https://esm.run/@google/genai";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAcPbzSt-iY8RVsYdZpvIfAAS86CwSYa5Q",
@@ -668,6 +672,7 @@
 
             if (!activeComp) {
                 if (contextList.length === 0) {
+                    // Force initial creation if completely empty database scenario
                     let newName = prompt("Welcome! No tournament profiles found. Please title your first active competition tracking block:", "Qualifiers Matrix Event");
                     if (!newName || !newName.trim()) newName = "Tournament Event " + new Date().toISOString().split('T')[0];
                     
@@ -683,6 +688,7 @@
                     competitionsMap.set(generatedId, newCompData);
                     activeCompetitionId = generatedId;
                 } else {
+                    // Ask cleanly as a proper Yes/No alternative selection flow
                     let chooseToCreate = confirm("All existing tournament profiles are currently locked/archived.\n\nClick OK (Yes) to establish a new active event profile now.\nClick Cancel (No) to simply inspect past historical event archives.");
                     
                     if (chooseToCreate) {
@@ -701,6 +707,7 @@
                         competitionsMap.set(generatedId, newCompData);
                         activeCompetitionId = generatedId;
                     } else {
+                        // Safe fallback: Simply inspect historical elements without creating any mock placeholders
                         activeCompetitionId = contextList[0].id;
                     }
                 }
@@ -715,7 +722,7 @@
 
         window.createNewCompetitionPrompt = async function() {
             let newName = prompt("Enter a title for your brand-new active Competition profile:", "District Qualifiers");
-            if (!newName || !newName.trim()) return;
+            if (!newName || !newName.trim()) return; // Aborts fully if they back out or leave it empty
 
             const generatedId = "comp_" + Date.now();
             const newCompData = {
@@ -917,6 +924,7 @@
             if (targetComp && targetComp.isArchived) {
                 if (confirm(`The selected tracking context profile is archived. Do you want to establish a brand-new active Competition Profile now?`)) {
                     await createNewCompetitionPrompt();
+                    // Prevent submission to the archived event if they clicked cancel inside prompt
                     if (competitionsMap.get(activeCompetitionId).isArchived) return;
                 } else {
                     return;
@@ -973,46 +981,24 @@
             
             const entryId = `${activeCompetitionId}_${teamNum}`;
             
-            // 1. Instantly write the raw text inputs to your Firestore Database
             await updateDoc(doc(db, "team_entries", entryId), {
                 teamNotes: notesText
             });
 
-            // 2. If text exists, issue a direct REST API call to the Gemini 2.5 Flash Endpoint
             if (notesText) {
                 try {
-                    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-                    
-                    const promptText = `You are a scouting assistant for FTC Team 5115. Summarize these raw scout match notes into short bullet points (max 3 bullets). Focus strictly on robot performance, autonomous capabilities, or bugs. Output raw HTML bullets (<ul> and <li> tags) only. Raw Notes: "${notesText}"`;
+                    const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+                    const prompt = `You are a scouting assistant for FTC Team 5115. Summarize these raw scout match notes into short bullet points (max 3 bullets). Focus strictly on robot performance, autonomous capabilities, or bugs. Output raw HTML bullets (<ul> and <li> tags) only. Raw Notes: "${notesText}"`;
 
-                    const response = await fetch(endpoint, {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json"
-                        },
-                        body: JSON.stringify({
-                            contents: [{
-                                parts: [{ text: promptText }]
-                            }]
-                        })
+                    const response = await ai.models.generateContent({
+                        model: 'gemini-2.5-flash',
+                        contents: prompt,
                     });
 
-                    const data = await response.json();
-                    
-                    // Extract the text output safely from the Gemini REST response structure
-                    if (data.candidates && data.candidates[0].content.parts[0].text) {
-                        let cleanHtmlSummary = data.candidates[0].content.parts[0].text.trim();
-                        
-                        // Clean up markdown block wraps if the model accidentally returns them
-                        cleanHtmlSummary = cleanHtmlSummary.replace(/^```html\s*/i, '').replace(/```$/, '').trim();
-
-                        // Update the Firestore document with the new AI summary
-                        await updateDoc(doc(db, "team_entries", entryId), { 
-                            aiSummary: cleanHtmlSummary 
-                        });
-                    }
+                    const cleanHtmlSummary = response.text.trim();
+                    await updateDoc(doc(db, "team_entries", entryId), { aiSummary: cleanHtmlSummary });
                 } catch (err) {
-                    console.error("Gemini Direct API Call Failed:", err);
+                    console.error("Gemini Failure:", err);
                 }
             }
 
@@ -1186,7 +1172,7 @@
             const currentCompContext = competitionsMap.get(activeCompetitionId);
             const isArchived = currentCompContext ? currentCompContext.isArchived : false;
 
-            targetDisplayData.forEach((team, idx) => {
+            targetDisplayData.forEach((team) => {
                 const tr = document.createElement('tr');
                 tr.id = `row-${team.teamNumber}`;
                 tr.setAttribute('data-team', team.teamNumber);
@@ -1196,6 +1182,7 @@
                     : '';
 
                 const inputsDisabledAttr = (isArchived || team.isCareerCompiledMock) ? "disabled" : "";
+                
                 const cleanNotesString = (team.teamNotes !== undefined && team.teamNotes !== null && team.teamNotes !== "undefined") ? team.teamNotes : "";
 
                 tr.innerHTML = `
@@ -1215,38 +1202,38 @@
                     <td data-label="Endgame Pts">${team.endgame}</td>
                     <td data-label="Actions" class="notes-column-cell">
                         <button class="notes-toggle-btn" onclick="toggleNotesDrawer('${team.teamNumber}')">
-                            <svg viewBox="0 0 24 24"><path d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18zM18 14H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
-                            Notes / AI
+                            <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+                            Notes
                         </button>
                     </td>
                 `;
-
                 tbody.appendChild(tr);
 
                 const drawerTr = document.createElement('tr');
                 drawerTr.className = "drawer-row-wrapper";
                 drawerTr.innerHTML = `
-                    <td colspan="9" class="drawer-fullwidth-cell">
+                    <td class="drawer-fullwidth-cell" colspan="9">
                         <div class="notes-container" id="notes-${team.teamNumber}">
                             ${summaryHtml}
-                            <label style="margin-bottom:8px; display:block;"><b>Raw Pit/Match Scout Logs:</b></label>
-                            <textarea class="notes-textarea" placeholder="Type structural match notes here...">${cleanNotesString}</textarea>
+                            <textarea class="notes-textarea" id="textarea-${team.teamNumber}" placeholder="e.g., Fast cycle times, struggles with high chamber climbing..." ${inputsDisabledAttr}>${cleanNotesString}</textarea>
                             <div class="notes-button-group">
-                                ${!team.isCareerCompiledMock ? `<button class="profile-delete-btn" onclick="deleteTeamProfileData('${team.teamNumber}')">Delete Profile</button>` : ''}
-                                <button class="notes-close-btn" onclick="toggleNotesDrawer('${team.teamNumber}')">Close</button>
-                                <button class="notes-save-btn" onclick="saveTeamNotesAndAutoSummarize('${team.teamNumber}', this.parentNode.previousElementSibling)" ${inputsDisabledAttr}>Save Notes</button>
+                                ${ !team.isCareerCompiledMock ? `
+                                    <button class="profile-delete-btn" onclick="deleteTeamProfileData('${team.teamNumber}')">Delete Entry</button>
+                                    <button class="notes-close-btn" onclick="toggleNotesDrawer('${team.teamNumber}')">Close Notes</button>
+                                    <button class="notes-save-btn" onclick="saveTeamNotesAndAutoSummarize('${team.teamNumber}', document.getElementById('textarea-${team.teamNumber}'))" ${inputsDisabledAttr}>Save Notes</button>
+                                ` : `<span style="font-size:0.75rem; color:var(--text-muted); padding:8px;">Notes display aggregated summary tracking mode. Check individual event profiles to modify source values.</span>` }
                             </div>
+                            <div class="notes-clear"></div>
                         </div>
                     </td>
                 `;
                 tbody.appendChild(drawerTr);
+
                 rowVisibilityObserver.observe(tr);
             });
         }
 
-        window.addEventListener('DOMContentLoaded', () => {
-            initializeScoutingEnvironment();
-        });
+        initializeScoutingEnvironment();
     </script>
 </body>
 </html>
