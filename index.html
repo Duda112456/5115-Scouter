@@ -443,34 +443,44 @@
             .controls { flex-direction: row; align-items: center; }
             .controls select { width: auto; min-width: 250px; }
             
-            table { display: table; width: 100%; border-collapse: separate; border-spacing: 0; background: var(--bg-card); border-radius: 16px; overflow: hidden; border: 1px solid var(--border-color); }
+            /* Forces clean, even grid distribution across headers */
+            table { 
+                display: table; 
+                width: 100%; 
+                border-collapse: separate; 
+                border-spacing: 0; 
+                background: var(--bg-card); 
+                border-radius: 16px; 
+                overflow: hidden; 
+                border: 1px solid var(--border-color); 
+                table-layout: fixed; 
+            }
             thead { display: table-header-group; }
             tbody { display: table-row-group; }
             tr { display: table-row; background: none; margin-bottom: 0; border: none; }
             tr:hover { background-color: rgba(43, 28, 71, 0.3); }
             
-            /* Reset mobile layout rules so table nodes display natively on desktop */
-            th, td { display: table-cell; padding: 14px; text-align: left; vertical-align: middle; border-bottom: 1px solid var(--border-color); width: auto; }
-            th { background-color: rgba(21, 13, 38, 0.6); color: var(--primary); font-weight: 700; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px; }
-            
-            /* Center elements properly on desktop rows without layouts breaking */
-            th:nth-child(1), td:nth-child(1),
-            th:nth-child(4), td:nth-child(4),
-            th:nth-child(5), td:nth-child(5),
-            th:nth-child(6), td:nth-child(6),
-            th:nth-child(7), td:nth-child(7),
-            th:nth-child(8), td:nth-child(8),
-            th:nth-child(9), td:nth-child(9) {
-                text-align: center;
+            /* Reset mobile layout layout constraints */
+            th, td { 
+                display: table-cell; 
+                padding: 16px 12px; 
+                text-align: center; 
+                vertical-align: middle; 
+                border-bottom: 1px solid var(--border-color); 
             }
+            
+            /* Assign specific visual alignment properties where readable */
+            th:nth-child(3), td:nth-child(3) { text-align: left; } /* Team Name left-aligned */
+            
+            th { background-color: rgba(21, 13, 38, 0.6); color: var(--primary); font-weight: 700; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px; }
 
             td::before { content: ""; } 
             td[data-label="Team Rank"] { font-size: 1rem; color: var(--text-main); }
-            .alliance-input { width: 70px; }
+            .alliance-input { width: 65px; margin: 0 auto; display: block; }
 
-            .notes-column-cell { display: table-cell; padding: 14px; text-align: center; }
+            .notes-column-cell { display: table-cell; text-align: center; }
             .drawer-row-wrapper { display: table-row; }
-            .drawer-fullwidth-cell { display: table-cell; colspan: 9; padding: 0 20px 20px 20px; border-top: none; background: rgba(10, 5, 20, 0.15); }
+            .drawer-fullwidth-cell { display: table-cell; padding: 0 20px 20px 20px; border-top: none; background: rgba(10, 5, 20, 0.15); }
             .notes-container { margin-top: 0; margin-bottom: 0; background: var(--bg-dark); border-radius: 10px; border: 1px solid var(--border-color); }
         }
     </style>
@@ -650,10 +660,8 @@
                 contextList.push({id: d.id, ...d.data()});
             });
 
-            // Find any existing event that is currently active (NOT archived)
             let activeComp = contextList.find(c => !c.isArchived);
 
-            // If everything is archived, prompt to initialize a new active competition context
             if (!activeComp && contextList.length === 0) {
                 let newName = prompt("No active competition setup found. Please name your new Tournament profile:", "Qualifiers Match");
                 if (!newName || !newName.trim()) newName = "Tournament Event " + new Date().toISOString().split('T')[0];
@@ -670,7 +678,6 @@
                 competitionsMap.set(generatedId, newCompData);
                 activeCompetitionId = generatedId;
             } else if (!activeComp && contextList.length > 0) {
-                // If everything is archived but profiles exist, snap onto the first available tournament block
                 activeCompetitionId = contextList[0].id;
             } else {
                 activeCompetitionId = activeComp.id;
@@ -764,10 +771,9 @@
                 return;
             }
 
-            // Challenge gate prompt setup
             const pinAttempt = prompt(`⚠️ CRITICAL ACCESS: You are attempting to completely erase the competition profile: "${comp.name}".\n\nThis completely wipes the event configuration and all associated team scouter metrics permanently from Firestore.\n\nEnter the 4-digit master delete code to proceed:`);
             
-            if (pinAttempt === null) return; // User pressed cancel
+            if (pinAttempt === null) return; 
             
             if (pinAttempt.trim() !== "4994") {
                 alert("❌ ACCESS DENIED: Invalid 4-digit authentication signature code match configuration.");
@@ -776,7 +782,6 @@
 
             if (confirm(`Final warning: Are you completely certain you want to purge all tournament references and telemetry entries for "${comp.name}"?`)) {
                 try {
-                    // 1. Clear out all team entry match performance documents recorded for this tournament
                     const q = query(entriesCollection, where("competitionId", "==", activeCompetitionId));
                     const entrySnap = await getDocs(q);
                     const deletePromises = [];
@@ -785,12 +790,8 @@
                     });
                     await Promise.all(deletePromises);
 
-                    // 2. Clear out the primary structural configuration block document
                     await deleteDoc(doc(db, "competitions", activeCompetitionId));
-                    
                     alert("🗑️ Competition and corresponding entries successfully purged from the system registry.");
-                    
-                    // 3. Reset the application context mapping engine completely
                     await initializeScoutingEnvironment();
                 } catch(err) {
                     console.error("purging exception log pipeline err: ", err);
@@ -867,7 +868,6 @@
             e.preventDefault();
             const targetComp = competitionsMap.get(activeCompetitionId);
             
-            // Strictly base initialization check on whether the current focus profile is archived
             if (targetComp && targetComp.isArchived) {
                 if (confirm(`The selected tracking context profile is archived. Do you want to establish a brand-new active Competition Profile now?`)) {
                     let newName = prompt("Enter Name for new active Tournament tracking profile:", "Qualifiers Matrix Event");
@@ -942,12 +942,10 @@
             
             const entryId = `${activeCompetitionId}_${teamNum}`;
             
-            // 1. Immediately save the raw notes text
             await updateDoc(doc(db, "team_entries", entryId), {
                 teamNotes: notesText
             });
 
-            // 2. Automatically trigger AI summary generation if text exists
             if (notesText) {
                 try {
                     const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
@@ -1173,7 +1171,7 @@
                 const drawerTr = document.createElement('tr');
                 drawerTr.className = "drawer-row-wrapper";
                 drawerTr.innerHTML = `
-                    <td class="drawer-fullwidth-cell">
+                    <td class="drawer-fullwidth-cell" colspan="9">
                         <div class="notes-container" id="notes-${team.teamNumber}">
                             ${summaryHtml}
                             <textarea class="notes-textarea" id="textarea-${team.teamNumber}" placeholder="Type strategy notes..." ${inputsDisabledAttr}>${team.teamNotes}</textarea>
