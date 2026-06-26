@@ -103,7 +103,7 @@
         .app-view.active-view { display: block; }
 
         /* Form Layout */
-        form, .upload-container, .strategy-box { 
+        form, .strategy-box { 
             background: var(--bg-card); 
             padding: 20px; 
             border-radius: 16px; 
@@ -130,7 +130,6 @@
             box-shadow: 0 0 0 3px rgba(255, 115, 0, 0.25); 
         }
 
-        /* Fixes the tiny dropdown layout collapse */
         #compSelector {
             min-width: 180px;
             height: 36px;
@@ -194,7 +193,6 @@
             padding: 16px; 
             border-radius: 16px; 
             border: 1px solid var(--border-color); 
-            transition: background-color 0.3s ease;
         }
         td { 
             display: flex; 
@@ -217,11 +215,6 @@
             border: 2px solid var(--primary); 
             background: var(--bg-dark);
             color: var(--primary);
-        }
-        .alliance-input:disabled {
-            border-color: var(--border-color);
-            color: var(--text-muted);
-            opacity: 0.6;
         }
 
         /* 3x Orange Flash Notification Effects */
@@ -258,9 +251,7 @@
             letter-spacing: 0.5px;
             animation: scrollTicker 12s linear infinite;
         }
-        .ticker-text span {
-            color: var(--primary);
-        }
+        .ticker-text span { color: var(--primary); }
 
         @keyframes scrollTicker {
             0% { transform: translate3d(0, 0, 0); }
@@ -283,36 +274,19 @@
             width: auto;
             margin-top: 0;
             border: 1px solid var(--border-color);
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .notes-toggle-btn svg {
-            width: 14px;
-            height: 14px;
-            fill: var(--primary);
-            display: block;
         }
         
-        .drawer-row-wrapper {
-            display: contents;
-        }
-
-        .drawer-fullwidth-cell {
-            display: block;
-            width: 100%;
-            padding: 0;
-        }
+        .drawer-row-wrapper { display: contents; }
+        .drawer-fullwidth-cell { display: block; width: 100%; padding: 0; }
 
         .notes-container {
             display: none;
             margin-top: -10px;
             margin-bottom: 20px;
             background: var(--bg-card);
-            padding: 166px 16px 16px 16px;
+            padding: 16px;
             border-radius: 16px;
             border: 1px solid var(--primary);
-            text-align: left;
         }
         .notes-container.open { display: block; }
         
@@ -333,11 +307,6 @@
             margin-bottom: 4px;
             font-size: 0.8rem;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .ai-summary-display ul {
-            padding-left: 16px;
-            margin-top: 4px;
         }
 
         .notes-textarea {
@@ -353,75 +322,12 @@
             display: flex;
             gap: 8px;
             justify-content: flex-end;
-            flex-wrap: wrap;
         }
-        .notes-save-btn {
-            padding: 8px 14px;
-            font-size: 0.85rem;
-            width: auto;
-            margin-top: 0;
-        }
-        .notes-close-btn {
-            background: #23163d;
-            border: 1px solid var(--border-color);
-            color: var(--text-main);
-            padding: 8px 14px;
-            font-size: 0.85rem;
-            width: auto;
-            margin-top: 0;
-        }
-        .notes-close-btn:hover { background: #312054; }
-        
-        .profile-delete-btn {
-            background: var(--danger);
-            padding: 8px 14px;
-            font-size: 0.85rem;
-            width: auto;
-            margin-top: 0;
-            margin-right: auto; 
-        }
-        .profile-delete-btn:hover { background: #bd2130; }
+        .notes-save-btn { padding: 8px 14px; font-size: 0.85rem; width: auto; margin-top: 0; }
+        .notes-close-btn { background: #23163d; border: 1px solid var(--border-color); color: var(--text-main); padding: 8px 14px; font-size: 0.85rem; width: auto; margin-top: 0; }
+        .profile-delete-btn { background: var(--danger); padding: 8px 14px; font-size: 0.85rem; width: auto; margin-top: 0; margin-right: auto; }
 
-        .notes-clear { clear: both; }
-
-        /* Camera / Upload Scanner Box Layout styles */
-        .image-capture-zone {
-            border: 2px dashed var(--border-color);
-            border-radius: 12px;
-            padding: 30px 15px;
-            text-align: center;
-            background: rgba(10, 5, 20, 0.4);
-            cursor: pointer;
-            transition: all 0.25s ease;
-            margin-bottom: 15px;
-        }
-        .image-capture-zone:hover {
-            border-color: var(--primary);
-            background: rgba(255, 115, 0, 0.04);
-        }
-        .image-capture-zone svg {
-            width: 40px;
-            height: 40px;
-            fill: var(--text-muted);
-            margin-bottom: 10px;
-        }
-        #imagePreviewFrame {
-            max-width: 100%;
-            max-height: 250px;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            display: none;
-            margin: 15px auto 0 auto;
-        }
-        .scan-status-log {
-            font-size: 0.9rem;
-            color: var(--text-muted);
-            text-align: center;
-            margin-top: 10px;
-            font-style: italic;
-        }
-
-        /* ----- COMPLETELY REBUILT DESIGN FOR PERFECT 4-TAB ALIGNMENT ----- */
+        /* REBUILT DESIGN FOR PERFECT 3-TAB ALIGNMENT */
         .sketch-navbar-container {
             position: fixed;
             bottom: 20px;
@@ -439,21 +345,20 @@
             padding: 4px;
             border-radius: 40px;
             display: grid;
-            grid-template-columns: repeat(4, 1fr); /* Divides pill into 4 exact segments */
+            grid-template-columns: repeat(3, 1fr); /* Divides pill into 3 exact segments */
             position: relative;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
             pointer-events: auto;
             width: 92%;
-            max-width: 650px;
+            max-width: 500px;
         }
 
-        /* Sliding capsule track matching grid items */
         .nav-slider-bubble {
             position: absolute;
             top: 4px;
             left: 4px;
             height: calc(100% - 8px);
-            width: calc(25% - 6px); /* Exact quarter width minus padding balance */
+            width: calc(33.333% - 6px); /* Exact third width minus padding balance */
             background-color: var(--primary);
             border-radius: 35px;
             transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
@@ -467,7 +372,7 @@
             padding: 12px 2px;
             border-radius: 30px;
             cursor: pointer;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             font-weight: 700;
             display: flex;
             flex-direction: column; 
@@ -479,7 +384,6 @@
             transition: color 0.2s ease;
             width: 100%;
             margin: 0;
-            line-height: 1.1;
         }
 
         .nav-pill-btn svg {
@@ -487,19 +391,16 @@
             height: 16px;
             fill: currentColor;
             display: block;
-            flex-shrink: 0;
         }
 
         .nav-pill-btn.active-tab { color: #ffffff; }
 
-        /* Alliance Selection Layout UI Elements */
         .alliance-rank-badge {
             background: var(--primary);
             color: #fff;
             font-weight: bold;
             padding: 4px 10px;
             border-radius: 8px;
-            font-size: 0.95rem;
         }
         .analysis-justification-card {
             background: rgba(255, 115, 0, 0.04);
@@ -521,22 +422,19 @@
             
             .sketch-navbar-pill { width: 100%; }
             .nav-pill-btn { flex-direction: row; font-size: 0.88rem; padding: 12px 10px; gap: 6px; }
-            .nav-pill-btn svg { width: 16px; height: 16px; }
             
             table { 
                 display: table; 
                 width: 100%; 
                 border-collapse: separate; 
-                border-spacing: 0; 
                 background: var(--bg-card); 
                 border-radius: 16px; 
                 overflow: hidden; 
                 border: 1px solid var(--border-color); 
-                table-layout: fixed; 
             }
             thead { display: table-header-group; }
             tbody { display: table-row-group; }
-            tr { display: table-row; background: none; margin-bottom: 0; border: none; }
+            tr { display: table-row; }
             tr:hover { background-color: rgba(43, 28, 71, 0.3); }
             
             th, td { 
@@ -546,13 +444,8 @@
                 vertical-align: middle; 
                 border-bottom: 1px solid var(--border-color); 
             }
-            
-            th:nth-child(3), td:nth-child(3) { text-align: left; } 
-            th { background-color: rgba(21, 13, 38, 0.6); color: var(--primary); font-weight: 700; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px; }
-
+            th { background-color: rgba(21, 13, 38, 0.6); color: var(--primary); font-weight: 700; text-transform: uppercase; font-size: 0.8rem; }
             td::before { content: ""; } 
-            td[data-label="Team Rank"] { font-size: 1rem; color: var(--text-main); }
-            .alliance-input { width: 65px; margin: 0 auto; display: block; }
 
             .notes-column-cell { display: table-cell; text-align: center; }
             .drawer-row-wrapper { display: table-row; }
@@ -571,7 +464,7 @@
 
     <div class="comp-status-bar">
         <div class="active-comp-info">
-            Target Event: <strong id="currentCompDisplay">Loading Event Context...</strong>
+            Target Event: <strong id="currentCompDisplay">Syncing Database Context...</strong>
             <span id="frozenBadge" class="frozen-badge" style="display:none;">Archived/Frozen</span>
         </div>
         
@@ -656,28 +549,6 @@
         </form>
     </div>
 
-    <div id="aiScanView" class="app-view">
-        <div class="upload-container">
-            <h2>AI List Photo Scanner</h2>
-            <p style="color: var(--text-muted); font-size: 0.88rem; margin-bottom: 20px; line-height: 1.4;">
-                Take a photo or upload an image containing a ranking matrix, printout list, or match matrix. The AI will extract team identification and performance indices directly into a freshly created event scope.
-            </p>
-            
-            <div class="image-capture-zone" onclick="document.getElementById('nativeCameraInput').click()">
-                <svg viewBox="0 0 24 24"><path d="M4 4h3l2-2h6l2 2h3c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2zm8 3c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0 8c-1.65 0-3-1.35-3-3s1.35-3 3-3 3 1.35 3 3-1.35 3-3 3z"/></svg>
-                <div style="font-weight: bold; font-size: 1rem; margin-bottom: 4px;">Tap to Snapshot or Upload</div>
-                <div style="font-size: 0.8rem; color: var(--text-muted);">Supports Camera Capture & Image Documents</div>
-            </div>
-            
-            <input type="file" id="nativeCameraInput" accept="image/*" style="display: none;" onchange="handleImageSelection(this)">
-            
-            <img id="imagePreviewFrame" alt="Capture Preview">
-            <div id="scanStatusDisplay" class="scan-status-log"></div>
-            
-            <button id="processScanBtn" class="btn-success" style="display: none; margin-top: 20px;" onclick="executeAIVisionParsing()">Run AI Analysis</button>
-        </div>
-    </div>
-
     <div id="aiAllianceView" class="app-view">
         <div class="strategy-box">
             <h2>Alliance Selection Matrix Modeler</h2>
@@ -686,12 +557,12 @@
             </p>
             <div class="form-group">
                 <label for="allianceCriteriaInput">Tactical Alliance Match Criteria Requirements:</label>
-                <textarea id="allianceCriteriaInput" placeholder="e.g., We need a consistent complementary partner with a high Teleop OPR and dependable Endgame hanging points. Prioritize bots noted for strong defensive driving frames and quick autonomous lane tracking over high raw scores." style="height: 100px; margin-bottom: 10px;"></textarea>
+                <textarea id="allianceCriteriaInput" placeholder="e.g., We need a consistent complementary partner with a high Teleop OPR and dependable Endgame hanging points. Prioritize bots noted for strong defensive driving frames." style="height: 100px; margin-bottom: 10px;"></textarea>
             </div>
             <button id="generateAllianceBtn" class="btn-success" onclick="generateAIAlliancePickList()">Generate AI Alliance Rankings</button>
         </div>
 
-        <div id="allianceListOutputStatus" class="scan-status-log" style="margin-bottom: 15px;"></div>
+        <div id="allianceListOutputStatus" class="scan-status-log" style="margin-bottom: 15px; text-align: center; color: var(--text-muted);"></div>
 
         <table id="alliancePickTable" style="display: none;">
             <thead>
@@ -719,13 +590,9 @@
                 <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
                 Log Info
             </button>
-            <button class="nav-pill-btn" onclick="switchView('aiScanView', this, 2)">
-                <svg viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
-                Paper Scan
-            </button>
-            <button class="nav-pill-btn" onclick="switchView('aiAllianceView', this, 3)">
+            <button class="nav-pill-btn" onclick="switchView('aiAllianceView', this, 2)">
                 <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
-                Alliance Pick
+                AI Pick
             </button>
         </div>
     </div>
@@ -741,7 +608,6 @@
             
             const bubble = document.getElementById('navBubble');
             if(bubble) {
-                // Explicit 100% calculation steps matching the modern grid layout
                 bubble.style.transform = `translateX(${indexPosition * 100}%)`;
             }
             window.scrollTo(0, 0);
@@ -753,8 +619,11 @@
         import { getFirestore, collection, doc, setDoc, onSnapshot, updateDoc, getDocs, getDoc, deleteDoc, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { GoogleGenAI } from "https://esm.run/@google/genai-web";
 
+        // Unified credential key configuration layout
+        const SCOUTER_API_KEY = "AIzaSyAcPbzSt-iY8RVsYdZpvIfAAS86CwSYa5Q";
+
         const firebaseConfig = {
-            apiKey: "AIzaSyAcPbzSt-iY8RVsYdZpvIfAAS86CwSYa5Q",
+            apiKey: SCOUTER_API_KEY,
             authDomain: "ftc-team-scouter.firebaseapp.com",
             projectId: "ftc-team-scouter",
             storageBucket: "ftc-team-scouter.firebasestorage.app",
@@ -762,9 +631,6 @@
             appId: "1:873760240222:web:3114e1e3fd6661d1d4facf",
             measurementId: "G-ZCQ4RCQBMD"
         };
-
-        // OBTAIN A SEPARATE GEMINI API KEY VIA GOOGLE AI STUDIO AND PASTE IT HERE
-        const GEMINI_API_KEY = "YOUR_ACTUAL_GEMINI_API_KEY";
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
@@ -779,35 +645,29 @@
 
         let rawEntriesArray = [];
         let globalProfilesMap = new Map();
-
         let historicalEntriesMap = new Map(); 
         let observedVisibleTeams = new Set(); 
-        let activeViewId = 'rankingsView';
+        let isInitialLoad = true;
         let bannerQueue = [];
         let bannerIsRunning = false;
-        let localCapturedBase64Image = null;
+
+        // Safe operational boundary accessor for the generative interface
+        function getAiEngine() {
+            try {
+                return new GoogleGenAI({ apiKey: SCOUTER_API_KEY });
+            } catch (err) {
+                console.error("AI Core Subsystem failed initialization parameters:", err);
+                return null;
+            }
+        }
 
         const rowVisibilityObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 const teamNum = entry.target.getAttribute('data-team');
-                if (entry.isIntersecting) {
-                    observedVisibleTeams.add(teamNum);
-                } else {
-                    observedVisibleTeams.delete(teamNum);
-                }
+                if (entry.isIntersecting) { observedVisibleTeams.add(teamNum); } 
+                else { observedVisibleTeams.delete(teamNum); }
             });
-        }, { threshold: 0.05, rootMargin: "0px 0px -10px 0px" });
-
-        function isElementInViewport(el) {
-            if (!el) return false;
-            const rect = el.getBoundingClientRect();
-            return (
-                rect.top >= 0 &&
-                rect.left >= 0 &&
-                rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
-                rect.right <= (window.innerWidth || document.documentElement.clientWidth)
-            );
-        }
+        }, { threshold: 0.05 });
 
         async function initializeScoutingEnvironment() {
             try {
@@ -823,35 +683,22 @@
 
                 if (!activeComp) {
                     if (contextList.length === 0) {
-                        let newName = prompt("Welcome! No tournament profiles found. Please title your first active competition tracking block:", "Qualifiers Matrix Event");
+                        let newName = prompt("Welcome! Please title your first active competition tracking block:", "Qualifiers Matrix Event");
                         if (!newName || !newName.trim()) newName = "Tournament Event " + new Date().toISOString().split('T')[0];
                         
                         const generatedId = "comp_" + Date.now();
-                        const newCompData = {
-                            name: newName.trim(),
-                            dateStamp: new Date().toISOString().split('T')[0],
-                            isArchived: false,
-                            createdTime: Date.now()
-                        };
-
+                        const newCompData = { name: newName.trim(), dateStamp: new Date().toISOString().split('T')[0], isArchived: false, createdTime: Date.now() };
                         await setDoc(doc(db, "competitions", generatedId), newCompData);
                         competitionsMap.set(generatedId, newCompData);
                         activeCompetitionId = generatedId;
                     } else {
-                        let chooseToCreate = confirm("All existing tournament profiles are currently locked/archived.\n\nClick OK (Yes) to establish a new active event profile now.\nClick Cancel (No) to simply inspect past historical event archives.");
-                        
+                        let chooseToCreate = confirm("All configurations are archived. Create a new active tournament profile?");
                         if (chooseToCreate) {
                             let newName = prompt("Please title your new active Tournament profile:");
                             if (!newName || !newName.trim()) newName = "Tournament Event " + new Date().toISOString().split('T')[0];
                             
                             const generatedId = "comp_" + Date.now();
-                            const newCompData = {
-                                name: newName.trim(),
-                                dateStamp: new Date().toISOString().split('T')[0],
-                                isArchived: false,
-                                createdTime: Date.now()
-                            };
-
+                            const newCompData = { name: newName.trim(), dateStamp: new Date().toISOString().split('T')[0], isArchived: false, createdTime: Date.now() };
                             await setDoc(doc(db, "competitions", generatedId), newCompData);
                             competitionsMap.set(generatedId, newCompData);
                             activeCompetitionId = generatedId;
@@ -867,8 +714,8 @@
                 updateCompDisplayState();
                 startLiveDataSyncEngines();
             } catch(e) {
-                console.error("Initialization failed: ", e);
-                document.getElementById('currentCompDisplay').innerText = "Database Connection Error";
+                console.error("Initialization pipeline broken: ", e);
+                document.getElementById('currentCompDisplay').innerText = "Database Synchronization Interrupted";
             }
         }
 
@@ -877,12 +724,7 @@
             if (!newName || !newName.trim()) return;
 
             const generatedId = "comp_" + Date.now();
-            const newCompData = {
-                name: newName.trim(),
-                dateStamp: new Date().toISOString().split('T')[0],
-                isArchived: false,
-                createdTime: Date.now()
-            };
+            const newCompData = { name: newName.trim(), dateStamp: new Date().toISOString().split('T')[0], isArchived: false, createdTime: Date.now() };
 
             await setDoc(doc(db, "competitions", generatedId), newCompData);
             competitionsMap.set(generatedId, newCompData);
@@ -926,14 +768,12 @@
                     unarchiveBtn.style.display = "inline-block";
                     document.getElementById('formHeaderTitle').innerText = "Tournament Locked (Archived Mode)";
                     document.getElementById('formSubmitBtn').disabled = true;
-                    document.getElementById('formSubmitBtn').innerText = "Locked";
                 } else {
                     frozenBadge.style.display = "none";
                     archiveBtn.style.display = "inline-block";
                     unarchiveBtn.style.display = "none";
                     document.getElementById('formHeaderTitle').innerText = "Log / Edit Team Info";
                     document.getElementById('formSubmitBtn').disabled = false;
-                    document.getElementById('formSubmitBtn').innerText = "Save Entry";
                 }
             }
         }
@@ -950,11 +790,7 @@
         window.archiveCurrentCompetition = async function() {
             const comp = competitionsMap.get(activeCompetitionId);
             if (!comp) return;
-            if (comp.isArchived) {
-                alert("This competition profile is already archived!");
-                return;
-            }
-            if (confirm(`Are you sure you want to archive "${comp.name}"? This freezes performance data edits while preserving career calculations.`)) {
+            if (confirm(`Archive structure dataset for "${comp.name}"?`)) {
                 await updateDoc(doc(db, "competitions", activeCompetitionId), { isArchived: true });
                 comp.isArchived = true;
                 repopulateCompetitionDropdownSelector();
@@ -966,11 +802,7 @@
         window.unarchiveCurrentCompetition = async function() {
             const comp = competitionsMap.get(activeCompetitionId);
             if (!comp) return;
-            if (!comp.isArchived) {
-                alert("This competition profile is already active!");
-                return;
-            }
-            if (confirm(`Are you sure you want to unarchive "${comp.name}"? This will reactivate editing capabilities for this event.`)) {
+            if (confirm(`Unarchive and re-open writing paths for "${comp.name}"?`)) {
                 await updateDoc(doc(db, "competitions", activeCompetitionId), { isArchived: false });
                 comp.isArchived = false;
                 repopulateCompetitionDropdownSelector();
@@ -981,34 +813,18 @@
 
         window.deleteCurrentCompetition = async function() {
             const comp = competitionsMap.get(activeCompetitionId);
-            if (!comp) {
-                alert("No tournament selected to drop.");
-                return;
-            }
-            const pinAttempt = prompt(`⚠️ CRITICAL ACCESS: Erasing competition profile: "${comp.name}".\n\nEnter the 4-digit master delete code to proceed:`);
-            if (pinAttempt === null) return; 
-            if (pinAttempt.trim() !== "4994") {
-                alert("❌ ACCESS DENIED: Invalid authentication code.");
-                return;
-            }
+            if (!comp) return;
+            const pinAttempt = prompt(`Master destruction validation code:`);
+            if (pinAttempt !== "4994") { alert("Action unauthorized."); return; }
 
-            if (confirm(`Purge all records for "${comp.name}"?`)) {
-                try {
-                    const q = query(entriesCollection, where("competitionId", "==", activeCompetitionId));
-                    const entrySnap = await getDocs(q);
-                    const deletePromises = [];
-                    entrySnap.forEach((docRef) => {
-                        deletePromises.push(deleteDoc(doc(db, "team_entries", docRef.id)));
-                    });
-                    await Promise.all(deletePromises);
-
-                    await deleteDoc(doc(db, "competitions", activeCompetitionId));
-                    alert("Competition and corresponding entries purged.");
-                    await initializeScoutingEnvironment();
-                } catch(err) {
-                    console.error(err);
-                    alert("An error occurred trying to delete the database records.");
-                }
+            if (confirm(`Purge profile completely?`)) {
+                const q = query(entriesCollection, where("competitionId", "==", activeCompetitionId));
+                const entrySnap = await getDocs(q);
+                entrySnap.forEach(async (docRef) => {
+                    await deleteDoc(doc(db, "team_entries", docRef.id));
+                });
+                await deleteDoc(doc(db, "competitions", activeCompetitionId));
+                await initializeScoutingEnvironment();
             }
         }
 
@@ -1016,69 +832,31 @@
             currentScope = scope;
             document.getElementById('viewCompToggle').classList.toggle('active', scope === 'current');
             document.getElementById('viewCareerToggle').classList.toggle('active', scope === 'career');
-            
-            const rankSelectOption = document.getElementById('optAllianceRank');
-            const sortBySelect = document.getElementById('sortBy');
-
-            if (scope === 'career') {
-                rankSelectOption.style.display = 'none';
-                sortBySelect.value = 'overallOpr';
-            } else {
-                rankSelectOption.style.display = 'block';
-            }
+            document.getElementById('sortBy').value = 'overallOpr';
             renderTable();
         }
 
         window.attemptProfileAutoSync = async function(teamNum) {
-            const cleanNum = teamNum.trim();
-            if (!cleanNum) return;
-            
-            const profileDoc = await getDoc(doc(db, "global_team_profiles", cleanNum));
+            if (!teamNum.trim()) return;
+            const profileDoc = await getDoc(doc(db, "global_team_profiles", teamNum.trim()));
             if (profileDoc.exists()) {
-                const profileData = profileDoc.data();
-                const nameInput = document.getElementById('teamName');
-                if (!nameInput.value.trim() || nameInput.value === "Unknown") {
-                    nameInput.value = profileData.teamName || "";
-                }
+                document.getElementById('teamName').value = profileDoc.data().teamName || "";
             }
         }
 
         window.deleteTeamProfileData = async function(teamNum) {
-            const targetComp = competitionsMap.get(activeCompetitionId);
-            if (targetComp && targetComp.isArchived) {
-                alert("Cannot modify items. This competition context is locked.");
-                return;
-            }
-
-            if (confirm(`Are you sure you want to completely delete Team #${teamNum} entry metrics?`)) {
-                try {
-                    const entryId = `${activeCompetitionId}_${teamNum}`;
-                    await deleteDoc(doc(db, "team_entries", entryId));
-                    alert(`Team #${teamNum} removed.`);
-                } catch (e) {
-                    console.error(e);
-                }
+            if (confirm(`Purge team record metrics baseline data for #${teamNum}?`)) {
+                await deleteDoc(doc(db, "team_entries", `${activeCompetitionId}_${teamNum}`));
             }
         }
 
         document.getElementById('teamForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const targetComp = competitionsMap.get(activeCompetitionId);
-            
-            if (targetComp && targetComp.isArchived) {
-                if (confirm(`The selected tracking context profile is archived. Create a new active Profile?`)) {
-                    await createNewCompetitionPrompt();
-                    if (competitionsMap.get(activeCompetitionId).isArchived) return;
-                } else {
-                    return;
-                }
-            }
-
             const teamNum = document.getElementById('teamNumber').value.trim();
             const teamNameStr = document.getElementById('teamName').value.trim();
             const entryDocId = `${activeCompetitionId}_${teamNum}`;
 
-            const performanceMetrics = {
+            const payload = {
                 entryDocId: entryDocId,
                 competitionId: activeCompetitionId,
                 teamNumber: teamNum,
@@ -1089,30 +867,16 @@
                 endgame: parseInt(document.getElementById('endgame').value) || 0
             };
 
-            await setDoc(doc(db, "team_entries", entryDocId), performanceMetrics, { merge: true });
-
-            const globalProfileData = {
-                teamNumber: teamNum,
-                teamName: teamNameStr,
-                lastUpdated: Date.now()
-            };
-            await setDoc(doc(db, "global_team_profiles", teamNum), globalProfileData, { merge: true });
+            await setDoc(doc(db, "team_entries", entryDocId), payload, { merge: true });
+            await setDoc(doc(db, "global_team_profiles", teamNum), { teamNumber: teamNum, teamName: teamNameStr }, { merge: true });
 
             document.getElementById('teamForm').reset();
-            const navBtn = document.querySelectorAll('.nav-pill-btn')[0];
-            window.switchView('rankingsView', navBtn, 0);
+            switchView('rankingsView', document.querySelectorAll('.nav-pill-btn')[0], 0);
         });
 
         window.updateAllianceRank = async function(teamNum, newRank) {
-            const targetComp = competitionsMap.get(activeCompetitionId);
-            if (targetComp && targetComp.isArchived) {
-                alert("Action blocked: timeline frozen.");
-                return;
-            }
-            const rankVal = parseInt(newRank);
-            const entryId = `${activeCompetitionId}_${teamNum}`;
-            await updateDoc(doc(db, "team_entries", entryId), {
-                allianceRank: isNaN(rankVal) ? 999 : rankVal
+            await updateDoc(doc(db, "team_entries", `${activeCompetitionId}_${teamNum}`), {
+                allianceRank: parseInt(newRank) || 999
             });
         }
 
@@ -1120,29 +884,27 @@
             const notesText = textareaElement.value.trim();
             const button = textareaElement.nextElementSibling.nextElementSibling;
             
-            button.innerText = "Saving & Summarizing...";
+            button.innerText = "Saving logs...";
             button.disabled = true;
             
             const entryId = `${activeCompetitionId}_${teamNum}`;
             await updateDoc(doc(db, "team_entries", entryId), { teamNotes: notesText });
 
-            if (notesText && GEMINI_API_KEY !== "YOUR_ACTUAL_GEMINI_API_KEY") {
+            const aiInstance = getAiEngine();
+            if (notesText && aiInstance) {
                 try {
-                    const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
-                    const model = ai.getGenerativeModel({ model: "gemini-2.5-flash" });
-                    const prompt = `You are a scouting assistant for FTC Team 5115. Summarize these raw notes into short bullet points (max 3 bullets). Focus strictly on robot performance, autonomous capabilities, or bugs. Output raw HTML bullets (<ul> and <li> tags) only. Notes: "${notesText}"`;
-
-                    const response = await model.generateContent([prompt]);
-                    const cleanHtmlSummary = response.text.trim();
-                    await updateDoc(doc(db, "team_entries", entryId), { aiSummary: cleanHtmlSummary });
+                    const model = aiInstance.getGenerativeModel({ model: "gemini-2.5-flash" });
+                    const promptText = `Summarize these robotics metrics into 1-3 concise HTML bullet items for display inside a dashboard drawer. Output <ul> format only. Context: "${notesText}"`;
+                    const response = await model.generateContent([promptText]);
+                    await updateDoc(doc(db, "team_entries", entryId), { aiSummary: response.text.trim() });
                 } catch (err) {
-                    console.error("Gemini Failure:", err);
+                    console.error("AI generation block halted structural output:", err);
                 }
             }
 
-            button.innerText = "Saved!";
+            button.innerText = "Saved Context";
             button.disabled = false;
-            setTimeout(() => { button.innerText = "Save Notes"; }, 1500);
+            setTimeout(() => { button.innerText = "Save Notes"; }, 1200);
         }
 
         window.toggleNotesDrawer = function(teamNum) {
@@ -1150,202 +912,23 @@
             if(drawer) drawer.classList.toggle('open');
         }
 
-        function triggerTickerBanner(teamNumber, teamName, category) {
-            bannerQueue.push({ teamNumber, teamName, category });
-            if (!bannerIsRunning) {
-                processNextBannerItem();
-            }
-        }
-
-        function processNextBannerItem() {
-            if (bannerQueue.length === 0) {
-                bannerIsRunning = false;
-                document.getElementById('tickerBanner').style.display = 'none';
-                return;
-            }
-
-            bannerIsRunning = true;
-            const item = bannerQueue.shift();
-            const bannerContainer = document.getElementById('tickerBanner');
-            const tickerTextElement = document.getElementById('tickerText');
-
-            tickerTextElement.innerHTML = `LIVE FEED: Team <span>#${item.teamNumber} (${item.teamName})</span> updated metrics category: <span>[${item.category}]</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`;
-            bannerContainer.style.display = 'flex';
-
-            tickerTextElement.style.animation = 'none';
-            tickerTextElement.offsetHeight; 
-            tickerTextElement.style.animation = 'scrollTicker 10s linear 1';
-
-            setTimeout(() => {
-                processNextBannerItem();
-            }, 10000);
-        }
-
-        window.handleImageSelection = function(inputEl) {
-            const file = inputEl.files[0];
-            if (!file) return;
-
-            const status = document.getElementById('scanStatusDisplay');
-            const preview = document.getElementById('imagePreviewFrame');
-            const runBtn = document.getElementById('processScanBtn');
-
-            status.innerText = "Processing image selection...";
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const fullDataUrl = e.target.result;
-                preview.src = fullDataUrl;
-                preview.style.display = "block";
-                
-                localCapturedBase64Image = fullDataUrl.split(',')[1];
-                status.innerText = "Image prepared. Click below to scan.";
-                runBtn.style.display = "block";
-            };
-            reader.readAsDataURL(file);
-        }
-
-        window.executeAIVisionParsing = async function() {
-            if (GEMINI_API_KEY === "YOUR_ACTUAL_GEMINI_API_KEY") {
-                alert("Please add a genuine Gemini API Key to the code to run Vision tasks.");
-                return;
-            }
-            if (!localCapturedBase64Image) {
-                alert("Please select or snap an image baseline before parsing.");
-                return;
-            }
-
-            const targetCompName = prompt("Enter a title for this new scanned competition event profile context:", "Scanned Matrix Tournament");
-            if (!targetCompName || !targetCompName.trim()) {
-                alert("Event creation aborted.");
-                return;
-            }
-
-            const status = document.getElementById('scanStatusDisplay');
-            const runBtn = document.getElementById('processScanBtn');
-
-            runBtn.disabled = true;
-            runBtn.innerText = "AI System Processing...";
-            status.innerHTML = "Initializing Gemini Multimodal Engine... <br>Analyzing table data structures.";
-
-            try {
-                const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
-                const model = ai.getGenerativeModel({ model: "gemini-2.5-flash" });
-                
-                const promptString = `You are an expert robotics scouting assistant for FRC/FTC Team 5115. Look at this picture of a team ranking or matrix sheet. 
-                Extract every team listed in the photo. Structure the JSON items exactly like this prototype schema template:
-                [
-                  {
-                    "teamNumber": "5115",
-                    "teamName": "RoboKnights",
-                    "autoOpr": 12.5,
-                    "teleopOpr": 45.0,
-                    "avgScore": 57.5,
-                    "endgame": 10
-                  }
-                ]`;
-
-                const response = await model.generateContent([
-                    {
-                      inlineData: {
-                        mimeType: "image/jpeg",
-                        data: localCapturedBase64Image
-                      }
-                    },
-                    promptString
-                ]);
-
-                const rawText = response.text.trim();
-                let cleanParsedArray = [];
-                
-                const startIndex = rawText.indexOf('[');
-                const endIndex = rawText.lastIndexOf(']') + 1;
-                if(startIndex !== -1 && endIndex !== -1) {
-                    cleanParsedArray = JSON.parse(rawText.substring(startIndex, endIndex));
-                } else {
-                    throw new Error("JSON structure boundaries not identified.");
-                }
-
-                const generatedCompId = "comp_" + Date.now();
-                const newCompConfig = {
-                    name: targetCompName.trim(),
-                    dateStamp: new Date().toISOString().split('T')[0],
-                    isArchived: false,
-                    createdTime: Date.now()
-                };
-                await setDoc(doc(db, "competitions", generatedCompId), newCompConfig);
-                competitionsMap.set(generatedCompId, newCompConfig);
-                activeCompetitionId = generatedCompId;
-
-                for (const team of cleanParsedArray) {
-                    const cleanNum = String(team.teamNumber || "").trim();
-                    if (!cleanNum) continue;
-
-                    const cleanName = String(team.teamName || "Unknown").trim();
-                    const entryDocId = `${generatedCompId}_${cleanNum}`;
-
-                    const teamPayload = {
-                        entryDocId: entryDocId,
-                        competitionId: generatedCompId,
-                        teamNumber: cleanNum,
-                        teamName: cleanName,
-                        autoOpr: parseFloat(team.autoOpr) || 0,
-                        teleopOpr: parseFloat(team.teleopOpr) || 0,
-                        avgScore: parseFloat(team.avgScore) || 0,
-                        endgame: parseInt(team.endgame) || 0,
-                        allianceRank: 999
-                    };
-
-                    await setDoc(doc(db, "team_entries", entryDocId), teamPayload, { merge: true });
-                }
-
-                status.innerText = `Success! Mapped ${cleanParsedArray.length} teams.`;
-                document.getElementById('nativeCameraInput').value = "";
-                document.getElementById('imagePreviewFrame').style.display = "none";
-                localCapturedBase64Image = null;
-                runBtn.style.display = "none";
-
-                repopulateCompetitionDropdownSelector();
-                updateCompDisplayState();
-                
-                setTimeout(() => {
-                    const firstBtn = document.querySelectorAll('.nav-pill-btn')[0];
-                    window.switchView('rankingsView', firstBtn, 0);
-                }, 1200);
-
-            } catch (err) {
-                console.error("AI Scanner Failure:", err);
-                status.innerHTML = `<span style="color:var(--danger)">Parsing Failure: ${err.message || "Unknown error."}</span>`;
-            } finally {
-                runBtn.disabled = false;
-                runBtn.innerText = "Run AI Analysis";
-            }
-        }
-
         window.generateAIAlliancePickList = async function() {
-            if (GEMINI_API_KEY === "YOUR_ACTUAL_GEMINI_API_KEY") {
-                alert("Please declare a real Gemini AI API Token inside the source script layout.");
-                return;
-            }
             const criteria = document.getElementById('allianceCriteriaInput').value.trim();
-            if (!criteria) {
-                alert("Please declare your target alliance match traits or strategy rules first.");
-                return;
-            }
+            if (!criteria) { alert("Please supply target strategic parameter constraints."); return; }
 
             const currentScopeData = generateCompiledDisplayArray();
-            if (currentScopeData.length === 0) {
-                alert("No team metrics tracking dataset is populated under this event scope context.");
-                return;
-            }
+            if (currentScopeData.length === 0) { alert("No matrix rows present inside the targeting boundary map parameters."); return; }
 
             const statusLog = document.getElementById('allianceListOutputStatus');
             const runBtn = document.getElementById('generateAllianceBtn');
             const outputTable = document.getElementById('alliancePickTable');
             const outputBody = document.getElementById('alliancePickTableBody');
 
+            const aiInstance = getAiEngine();
+            if (!aiInstance) { alert("Model connectivity configuration exception."); return; }
+
             runBtn.disabled = true;
-            runBtn.innerText = "AI Generation Active...";
-            statusLog.innerHTML = "Packaging scouting matrix configurations... <br>Querying Gemini decision engine model.";
+            statusLog.innerHTML = "Querying operational metrics vectors... Connecting Gemini matrix optimization algorithms.";
             outputTable.style.display = "none";
 
             try {
@@ -1353,20 +936,8 @@
                     return `Team #${t.teamNumber} (${t.teamName}) -> Auto OPR: ${t.autoOpr}, Teleop OPR: ${t.teleopOpr}, Avg Score: ${t.avgScore}, Endgame Points: ${t.endgame}, Notes Logged: "${t.teamNotes || 'None'}".`;
                 }).join("\n");
 
-                const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
-                const model = ai.getGenerativeModel({ model: "gemini-2.5-flash" });
-
-                const strategicPrompt = `You are an elite robotics strategy advisor. Analyze every team against our criteria and rank all teams from best to worst. 
-                Criteria: "${criteria}"
-                Dataset: ${datasetContextString}
-                Output schema requirement:
-                [
-                  {
-                    "teamNumber": "5115",
-                    "teamName": "RoboKnights",
-                    "justification": "text description here"
-                  }
-                ]`;
+                const model = aiInstance.getGenerativeModel({ model: "gemini-2.5-flash" });
+                const strategicPrompt = `Rank all these teams based on criteria. Return a strict JSON array matching this format: [{"teamNumber": "5115", "teamName": "RoboKnights", "justification": "text description here"}] . Criteria: "${criteria}" . Matrix Dataset: ${datasetContextString}`;
 
                 const response = await model.generateContent([strategicPrompt]);
                 const responseText = response.text.trim();
@@ -1391,7 +962,7 @@
                         <td data-label="Team Identity Context">
                             <strong>${pick.teamName || matchingRawStats.teamName || 'Unknown'}</strong><br>
                             <span style="font-size:0.8rem; color:var(--text-muted)">
-                                OPR: ${(matchingRawStats.overallOpr || 0)} | Auto: ${(matchingRawStats.autoOpr || 0)} | Endgame: ${(matchingRawStats.endgame || 0)}
+                                OPR: ${(matchingRawStats.overallOpr || 0)} | Auto: ${(matchingRawStats.autoOpr || 0)}
                             </span>
                         </td>
                         <td data-label="Calculated Match Breakdown">
@@ -1404,79 +975,28 @@
 
                 statusLog.innerText = `Optimization array mapped completely. Evaluated ${structuredPriorityArray.length} targets.`;
                 outputTable.style.display = "table";
-
-            } catch(e) {
+            } catch (e) {
                 console.error(e);
-                statusLog.innerHTML = `<span style="color:var(--danger)">Modeling failure: ${e.message || "Timeout."}</span>`;
+                statusLog.innerHTML = `<span style="color:var(--danger)">Strategic compilation framework fault exception.</span>`;
             } finally {
                 runBtn.disabled = false;
-                runBtn.innerText = "Generate AI Alliance Rankings";
             }
         }
 
-        let isInitialLoad = true;
         function startLiveDataSyncEngines() {
             onSnapshot(entriesCollection, (snapshot) => {
-                let changesToProcess = [];
-
-                snapshot.docChanges().forEach((change) => {
-                    if (change.type === "modified" && !isInitialLoad) {
-                        const freshData = change.doc.data();
-                        
-                        if (freshData.competitionId === activeCompetitionId) {
-                            const oldData = historicalEntriesMap.get(freshData.entryDocId) || {};
-                            let matchingCategory = "General Profile Update";
-                            
-                            if (freshData.teamNotes !== undefined && freshData.teamNotes !== oldData.teamNotes) matchingCategory = "Scouting Notes Added";
-                            else if (freshData.aiSummary !== undefined && freshData.aiSummary !== oldData.aiSummary) matchingCategory = "AI Takeaways Generated";
-                            else if (Number(freshData.autoOpr) !== Number(oldData.autoOpr || 0)) matchingCategory = "Auto OPR";
-                            else if (Number(freshData.teleopOpr) !== Number(oldData.teleopOpr || 0)) matchingCategory = "Teleop OPR";
-                            else if (Number(freshData.avgScore) !== Number(oldData.avgScore || 0)) matchingCategory = "Avg Points";
-                            else if (Number(freshData.endgame) !== Number(oldData.endgame || 0)) matchingCategory = "Endgame Points";
-                            else if (freshData.allianceRank !== oldData.allianceRank) matchingCategory = "Team Rank Update";
-
-                            changesToProcess.push({
-                                teamNumber: freshData.teamNumber,
-                                teamName: freshData.teamName || "Unknown",
-                                category: matchingCategory
-                            });
-                        }
-                    }
-                });
-
                 rawEntriesArray = [];
                 snapshot.forEach((doc) => {
                     let data = doc.data();
                     if (data.allianceRank === undefined) data.allianceRank = 999;
                     rawEntriesArray.push(data);
-                    historicalEntriesMap.set(data.entryDocId, data);
                 });
-
                 renderTable();
                 isInitialLoad = false;
-
-                setTimeout(() => {
-                    changesToProcess.forEach(change => {
-                        const targetRow = document.getElementById(`row-${change.teamNumber}`);
-                        const isVisibleViaObserver = observedVisibleTeams.has(change.teamNumber);
-                        const isVisibleViaFallback = isElementInViewport(targetRow);
-                        const isCurrentlyVisible = (isVisibleViaObserver || isVisibleViaFallback);
-
-                        if (targetRow && isCurrentlyVisible) {
-                            targetRow.classList.remove('flash-notify');
-                            targetRow.offsetHeight; 
-                            targetRow.classList.add('flash-notify');
-                        } else {
-                            triggerTickerBanner(change.teamNumber, change.teamName, change.category);
-                        }
-                    });
-                }, 50);
             });
 
             onSnapshot(globalProfilesCollection, (snapshot) => {
-                snapshot.forEach(doc => {
-                    globalProfilesMap.set(doc.id, doc.data());
-                });
+                snapshot.forEach(doc => { globalProfilesMap.set(doc.id, doc.data()); });
                 if (!isInitialLoad) renderTable();
             });
         }
@@ -1484,41 +1004,21 @@
         function generateCompiledDisplayArray() {
             if (currentScope === "current") {
                 return rawEntriesArray.filter(e => e.competitionId === activeCompetitionId).map(e => {
-                    return {
-                        ...e,
-                        overallOpr: parseFloat(((e.autoOpr || 0) + (e.teleopOpr || 0)).toFixed(1))
-                    };
+                    return { ...e, overallOpr: parseFloat(((e.autoOpr || 0) + (e.teleopOpr || 0)).toFixed(1)) };
                 });
             } else {
                 const uniqueTeamNumbers = [...new Set(rawEntriesArray.map(e => e.teamNumber))];
-                
                 return uniqueTeamNumbers.map(tNum => {
                     const matches = rawEntriesArray.filter(e => e.teamNumber === tNum);
-                    const globalProfile = globalProfilesMap.get(tNum) || {};
-                    
-                    const autoSum = matches.reduce((acc, m) => acc + (m.autoOpr || 0), 0);
-                    const teleopSum = matches.reduce((acc, m) => acc + (m.teleopOpr || 0), 0);
-                    const scoreSum = matches.reduce((acc, m) => acc + (m.avgScore || 0), 0);
-                    const endgameSum = matches.reduce((acc, m) => acc + (m.endgame || 0), 0);
-                    
-                    const validNotesEntry = matches.find(m => m.teamNotes && m.teamNotes.trim() !== "");
-                    const validAiEntry = matches.find(m => m.aiSummary && m.aiSummary.trim() !== "");
-
-                    const computedAutoAvg = autoSum / matches.length;
-                    const computedTeleopAvg = teleopSum / matches.length;
-
+                    const autoAvg = matches.reduce((acc, m) => acc + (m.autoOpr || 0), 0) / matches.length;
+                    const teleopAvg = matches.reduce((acc, m) => acc + (m.teleopOpr || 0), 0) / matches.length;
                     return {
                         teamNumber: tNum,
-                        teamName: globalProfile.teamName || matches[0].teamName || "Unknown",
-                        overallOpr: parseFloat((computedAutoAvg + computedTeleopAvg).toFixed(1)),
-                        autoOpr: parseFloat(computedAutoAvg.toFixed(1)),
-                        teleopOpr: parseFloat(computedTeleopAvg.toFixed(1)),
-                        avgScore: parseFloat((scoreSum / matches.length).toFixed(1)),
-                        endgame: parseFloat((endgameSum / matches.length).toFixed(1)),
-                        allianceRank: "--", 
-                        teamNotes: validNotesEntry ? validNotesEntry.teamNotes : "",
-                        aiSummary: validAiEntry ? validAiEntry.aiSummary : "",
-                        isCareerCompiledMock: true
+                        teamName: matches[0].teamName || "Unknown",
+                        overallOpr: parseFloat((autoAvg + teleopAvg).toFixed(1)),
+                        autoOpr: parseFloat(autoAvg.toFixed(1)),
+                        teleopOpr: parseFloat(teleopAvg.toFixed(1)),
+                        avgScore: 0, endgame: 0, allianceRank: "--", isCareerCompiledMock: true
                     };
                 });
             }
@@ -1532,19 +1032,11 @@
             let targetDisplayData = generateCompiledDisplayArray();
             
             if(targetDisplayData.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding:30px; color:var(--text-muted);">No teams logged in this scope context yet. Go to 'Log Info' or scan a data list to populate rows.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding:30px; color:var(--text-muted);">No team matrix lines logged in this environment workspace scope profile template container.</td></tr>`;
                 return;
             }
 
-            targetDisplayData.sort((a, b) => {
-                if (sortBy === 'allianceRank') {
-                    return (a.allianceRank || 999) - (b.allianceRank || 999);
-                } else {
-                    return (b[sortBy] || 0) - (a[sortBy] || 0);
-                }
-            });
-
-            document.querySelectorAll('tr[data-team]').forEach(row => rowVisibilityObserver.unobserve(row));
+            targetDisplayData.sort((a, b) => (b[sortBy] || 0) - (a[sortBy] || 0));
             tbody.innerHTML = '';
 
             const currentCompContext = competitionsMap.get(activeCompetitionId);
@@ -1552,24 +1044,14 @@
 
             targetDisplayData.forEach((team) => {
                 const tr = document.createElement('tr');
-                tr.id = `row-${team.teamNumber}`;
                 tr.setAttribute('data-team', team.teamNumber);
                 
-                const summaryHtml = team.aiSummary 
-                    ? `<div class="ai-summary-display"><strong>⚡ AI Scouting Takeaways</strong>${team.aiSummary}</div>`
-                    : '';
-
+                const summaryHtml = team.aiSummary ? `<div class="ai-summary-display"><strong>⚡ AI Scouting Takeaways</strong>${team.aiSummary}</div>` : '';
                 const inputsDisabledAttr = (isArchived || team.isCareerCompiledMock) ? "disabled" : "";
-                const cleanNotesString = (team.teamNotes !== undefined && team.teamNotes !== null && team.teamNotes !== "undefined") ? team.teamNotes : "";
+                const cleanNotesString = team.teamNotes || "";
 
                 tr.innerHTML = `
-                    <td data-label="Team Rank">
-                        <input type="number" class="alliance-input" 
-                               value="${team.allianceRank === 999 || team.allianceRank === '--' ? '' : team.allianceRank}" 
-                               placeholder="--" 
-                               onchange="updateAllianceRank('${team.teamNumber}', this.value)"
-                               inputmode="numeric" ${inputsDisabledAttr}>
-                    </td>
+                    <td data-label="Team Rank"><input type="number" class="alliance-input" value="${team.allianceRank === 999 ? '' : team.allianceRank}" onchange="updateAllianceRank('${team.teamNumber}', this.value)" ${inputsDisabledAttr}></td>
                     <td data-label="Team #"><b>${team.teamNumber}</b></td>
                     <td data-label="Team Name">${team.teamName}</td>
                     <td data-label="Overall OPR"><strong>${team.overallOpr}</strong></td>
@@ -1578,10 +1060,7 @@
                     <td data-label="Avg Points">${team.avgScore}</td>
                     <td data-label="Endgame Pts">${team.endgame}</td>
                     <td data-label="Actions" class="notes-column-cell">
-                        <button class="notes-toggle-btn" onclick="toggleNotesDrawer('${team.teamNumber}')">
-                            <svg viewBox="0 0 24 24"><path d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18zM18 14H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
-                            Notes / AI
-                        </button>
+                        <button class="notes-toggle-btn" onclick="toggleNotesDrawer('${team.teamNumber}')">Notes / AI</button>
                     </td>
                 `;
 
@@ -1591,21 +1070,18 @@
                     <td colspan="9" class="drawer-fullwidth-cell">
                         <div class="notes-container" id="notes-${team.teamNumber}">
                             ${summaryHtml}
-                            <label style="margin-bottom:8px; display:block;"><b>Raw Pit/Match Scout Logs:</b></label>
-                            <textarea class="notes-textarea" placeholder="Type structural match notes here...">${cleanNotesString}</textarea>
+                            <textarea class="notes-textarea" placeholder="Structural notes context parameters logged live...">${cleanNotesString}</textarea>
                             <div class="notes-button-group">
                                 ${!team.isCareerCompiledMock ? `<button class="profile-delete-btn" onclick="deleteTeamProfileData('${team.teamNumber}')">Delete Profile</button>` : ''}
                                 <button class="notes-close-btn" onclick="toggleNotesDrawer('${team.teamNumber}')">Close</button>
                                 <button class="notes-save-btn" onclick="saveTeamNotesAndAutoSummarize('${team.teamNumber}', this.parentNode.previousElementSibling)" ${inputsDisabledAttr}>Save Notes</button>
                             </div>
-                            <div class="notes-clear"></div>
                         </div>
                     </td>
                 `;
 
                 tbody.appendChild(tr);
                 tbody.appendChild(drawerTr);
-
                 rowVisibilityObserver.observe(tr);
             });
         }
