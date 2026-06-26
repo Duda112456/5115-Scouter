@@ -525,7 +525,7 @@
             <div class="form-grid">
                 <div class="form-group">
                     <label for="teamNumber">Team Number</label>
-                    <input type="text" id="teamNumber" required placeholder="e.g., 5115" inputmode="numeric" oninput="attemptProfileAutoSync(this.value)">
+                    <input type="text" id="teamNumber" required placeholder="e.g., 5115" inputmode="numeric">
                 </div>
                 <div class="form-group">
                     <label for="teamName">Team Name</label>
@@ -600,7 +600,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, doc, setDoc, onSnapshot, updateDoc, getDocs, getDoc, deleteDoc, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, doc, setDoc, onSnapshot, updateDoc, getDocs, deleteDoc, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { GoogleGenAI } from "https://esm.run/@google/genai";
 
         const firebaseConfig = {
@@ -643,22 +643,7 @@
             });
         }, { threshold: 0.05 });
 
-        // --- FIRST HQ API SYNC ENGINE CONTROLLERS ---
-        async function fetchFirstHQData(endpointPath) {
-            const base64Auth = btoa(`5115:${FIRST_API_TOKEN}`);
-            const targetUrl = `https://ftc-api.firstinspires.org/v2.0/2026/${endpointPath}`;
-            
-            const response = await fetch(targetUrl, {
-                method: "GET",
-                headers: {
-                    "Authorization": `Basic ${base64Auth}`,
-                    "Accept": "application/json"
-                }
-            });
-            if (!response.ok) throw new Error(`FIRST Server Request Failure: ${response.status}`);
-            return await response.json();
-        }
-
+        // --- FIRST HQ API SYNC ENGINE WITH CORS PROXY ---
         async function triggerLiveFmsSyncSequence() {
             if (!activeCompetitionId) return;
             const targetComp = competitionsMap.get(activeCompetitionId);
@@ -669,12 +654,25 @@
             document.getElementById('syncIndicator').style.color = "var(--primary)";
 
             try {
-                // 1. Pull current official roster and standings list
-                const rankingsData = await fetchFirstHQData(`rankings/${activeCompetitionId}`);
+                const base64Auth = btoa(`5115:${FIRST_API_TOKEN}`);
+                const proxy = "https://cors-anywhere.herokuapp.com/";
+                
+                // 1. Pull current official standings list
+                const rankingsUrl = `${proxy}https://ftc-api.firstinspires.org/v2.0/2026/rankings/${activeCompetitionId}`;
+                const rankRes = await fetch(rankingsUrl, {
+                    headers: { "Authorization": `Basic ${base64Auth}`, "Accept": "application/json" }
+                });
+                if (!rankRes.ok) throw new Error(`Rankings status code error: ${rankRes.status}`);
+                const rankingsData = await rankRes.json();
                 const officialTeamsList = rankingsData.rankings || [];
 
                 // 2. Fetch completed match details to run calculations
-                const matchesData = await fetchFirstHQData(`matches/${activeCompetitionId}`);
+                const matchesUrl = `${proxy}https://ftc-api.firstinspires.org/v2.0/2026/matches/${activeCompetitionId}`;
+                const matchRes = await fetch(matchesUrl, {
+                    headers: { "Authorization": `Basic ${base64Auth}`, "Accept": "application/json" }
+                });
+                if (!matchRes.ok) throw new Error(`Matches status code error: ${matchRes.status}`);
+                const matchesData = await matchRes.json();
                 const rawMatchesList = matchesData.matches || [];
 
                 for (let record of officialTeamsList) {
@@ -684,7 +682,7 @@
                     // Filter matches containing the given team
                     const completedTeamMatches = rawMatchesList.filter(m => 
                         m.postResult === true && 
-                        (m.teams.some(t => t.teamNumber === record.teamNumber))
+                        (m.teams && m.teams.some(t => t.teamNumber === record.teamNumber))
                     );
 
                     let calcAutoSum = 0;
@@ -694,24 +692,22 @@
                     const matchCount = completedTeamMatches.length || 1;
 
                     completedTeamMatches.forEach(match => {
-                        // Locate alliance assignment to inspect scoring breakdown elements
                         const teamAllianceObject = match.teams.find(t => t.teamNumber === record.teamNumber);
                         if (!teamAllianceObject) return;
                         const allianceColor = teamAllianceObject.station.startsWith("Red") ? "red" : "blue";
                         
-                        // Parse values safely from score breakdowns if present, or fallback to final scores
-                        if (match.scores) {
-                            const allianceScore = allianceColor === "red" ? match.scores.red : match.scores.blue;
+                        // Defensive checks for match breakdown availability
+                        if (match.scores && match.scores[allianceColor]) {
+                            const allianceScore = match.scores[allianceColor];
                             calcAutoSum += allianceScore.autoPoints || 0;
                             calcTeleopSum += allianceScore.teleopPoints || 0;
                             calcEndgameSum += allianceScore.endgamePoints || 0;
                             calcScoreSum += allianceScore.totalPoints || 0;
                         } else {
-                            calcScoreSum += allianceColor === "red" ? match.scoreRed : match.scoreBlue;
+                            calcScoreSum += allianceColor === "red" ? (match.scoreRed || 0) : (match.scoreBlue || 0);
                         }
                     });
 
-                    // Construct target update object mapping values directly into Firestore
                     const syncPayload = {
                         entryDocId: entryId,
                         competitionId: activeCompetitionId,
@@ -726,7 +722,6 @@
 
                     await setDoc(doc(db, "team_entries", entryId), syncPayload, { merge: true });
 
-                    // Maintain global index map configuration
                     await setDoc(doc(db, "global_team_profiles", teamNum), {
                         teamNumber: teamNum,
                         teamName: record.teamName || `Team ${teamNum}`,
@@ -754,7 +749,7 @@
             }
         }
 
-        // --- APP ENGINE LOGIC CONTROL ARCHITECTURE ---
+        // --- APP ENGINE CONTROL ARCHITECTURE ---
         async function initializeScoutingEnvironment() {
             const snap = await getDocs(compsCollection);
             let contextList = [];
