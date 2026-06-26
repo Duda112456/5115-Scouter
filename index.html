@@ -668,16 +668,12 @@
                 contextList.push({id: d.id, ...d.data()});
             });
 
-            // Check if there are completely zero events, or if every single logged event is archived
             let activeComp = contextList.find(c => !c.isArchived);
 
             if (!activeComp) {
-                let msg = contextList.length === 0 
-                    ? "Welcome! No tournament profiles found. Let's create your first active competition tracking block:" 
-                    : "All existing tournament profiles are currently locked/archived. Would you like to create a new active event profile now, or continue viewing past data archives?";
-                
-                if (contextList.length === 0 || confirm(msg)) {
-                    let newName = prompt("Please title your new active Tournament profile:", "Qualifiers Matrix Event");
+                if (contextList.length === 0) {
+                    // Force initial creation if completely empty database scenario
+                    let newName = prompt("Welcome! No tournament profiles found. Please title your first active competition tracking block:", "Qualifiers Matrix Event");
                     if (!newName || !newName.trim()) newName = "Tournament Event " + new Date().toISOString().split('T')[0];
                     
                     const generatedId = "comp_" + Date.now();
@@ -692,8 +688,28 @@
                     competitionsMap.set(generatedId, newCompData);
                     activeCompetitionId = generatedId;
                 } else {
-                    // Fall back safely to the most recent archived competition if they just want to view past charts
-                    activeCompetitionId = contextList[0].id;
+                    // Ask cleanly as a proper Yes/No alternative selection flow
+                    let chooseToCreate = confirm("All existing tournament profiles are currently locked/archived.\n\nClick OK (Yes) to establish a new active event profile now.\nClick Cancel (No) to simply inspect past historical event archives.");
+                    
+                    if (chooseToCreate) {
+                        let newName = prompt("Please title your new active Tournament profile:");
+                        if (!newName || !newName.trim()) newName = "Tournament Event " + new Date().toISOString().split('T')[0];
+                        
+                        const generatedId = "comp_" + Date.now();
+                        const newCompData = {
+                            name: newName.trim(),
+                            dateStamp: new Date().toISOString().split('T')[0],
+                            isArchived: false,
+                            createdTime: Date.now()
+                        };
+
+                        await setDoc(doc(db, "competitions", generatedId), newCompData);
+                        competitionsMap.set(generatedId, newCompData);
+                        activeCompetitionId = generatedId;
+                    } else {
+                        // Safe fallback: Simply inspect historical elements without creating any mock placeholders
+                        activeCompetitionId = contextList[0].id;
+                    }
                 }
             } else {
                 activeCompetitionId = activeComp.id;
@@ -706,7 +722,7 @@
 
         window.createNewCompetitionPrompt = async function() {
             let newName = prompt("Enter a title for your brand-new active Competition profile:", "District Qualifiers");
-            if (!newName || !newName.trim()) return;
+            if (!newName || !newName.trim()) return; // Aborts fully if they back out or leave it empty
 
             const generatedId = "comp_" + Date.now();
             const newCompData = {
@@ -908,6 +924,8 @@
             if (targetComp && targetComp.isArchived) {
                 if (confirm(`The selected tracking context profile is archived. Do you want to establish a brand-new active Competition Profile now?`)) {
                     await createNewCompetitionPrompt();
+                    // Prevent submission to the archived event if they clicked cancel inside prompt
+                    if (competitionsMap.get(activeCompetitionId).isArchived) return;
                 } else {
                     return;
                 }
