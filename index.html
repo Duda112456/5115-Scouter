@@ -513,6 +513,7 @@
             </div>
             <select id="compSelector" onchange="changeActiveCompetitionContext(this.value)" style="padding: 6px 12px; font-size: 0.85rem; border-radius: 20px;">
                 </select>
+            <button id="newCompBtn" class="btn-success" onclick="createNewCompetitionPrompt()" style="padding: 6px 14px; font-size: 0.85rem; border-radius: 20px; width: auto; margin-top:0;">+ New Event</button>
             <button id="archiveBtn" class="btn-secondary" onclick="archiveCurrentCompetition()" style="padding: 6px 12px; font-size: 0.85rem; border-radius: 20px; width: auto; margin-top:0;">Archive Event</button>
             <button id="unarchiveBtn" class="btn-success" onclick="unarchiveCurrentCompetition()" style="padding: 6px 12px; font-size: 0.85rem; border-radius: 20px; width: auto; margin-top:0; display:none;">Unarchive Event</button>
             <button id="deleteCompBtn" class="btn-danger" onclick="deleteCurrentCompetition()" style="padding: 6px 12px; font-size: 0.85rem; border-radius: 20px; width: auto; margin-top:0;">Delete Event</button>
@@ -667,25 +668,33 @@
                 contextList.push({id: d.id, ...d.data()});
             });
 
+            // Check if there are completely zero events, or if every single logged event is archived
             let activeComp = contextList.find(c => !c.isArchived);
 
-            if (!activeComp && contextList.length === 0) {
-                let newName = prompt("No active competition setup found. Please name your new Tournament profile:", "Qualifiers Match");
-                if (!newName || !newName.trim()) newName = "Tournament Event " + new Date().toISOString().split('T')[0];
+            if (!activeComp) {
+                let msg = contextList.length === 0 
+                    ? "Welcome! No tournament profiles found. Let's create your first active competition tracking block:" 
+                    : "All existing tournament profiles are currently locked/archived. Would you like to create a new active event profile now, or continue viewing past data archives?";
                 
-                const generatedId = "comp_" + Date.now();
-                const newCompData = {
-                    name: newName.trim(),
-                    dateStamp: new Date().toISOString().split('T')[0],
-                    isArchived: false,
-                    createdTime: Date.now()
-                };
+                if (contextList.length === 0 || confirm(msg)) {
+                    let newName = prompt("Please title your new active Tournament profile:", "Qualifiers Matrix Event");
+                    if (!newName || !newName.trim()) newName = "Tournament Event " + new Date().toISOString().split('T')[0];
+                    
+                    const generatedId = "comp_" + Date.now();
+                    const newCompData = {
+                        name: newName.trim(),
+                        dateStamp: new Date().toISOString().split('T')[0],
+                        isArchived: false,
+                        createdTime: Date.now()
+                    };
 
-                await setDoc(doc(db, "competitions", generatedId), newCompData);
-                competitionsMap.set(generatedId, newCompData);
-                activeCompetitionId = generatedId;
-            } else if (!activeComp && contextList.length > 0) {
-                activeCompetitionId = contextList[0].id;
+                    await setDoc(doc(db, "competitions", generatedId), newCompData);
+                    competitionsMap.set(generatedId, newCompData);
+                    activeCompetitionId = generatedId;
+                } else {
+                    // Fall back safely to the most recent archived competition if they just want to view past charts
+                    activeCompetitionId = contextList[0].id;
+                }
             } else {
                 activeCompetitionId = activeComp.id;
             }
@@ -693,6 +702,27 @@
             repopulateCompetitionDropdownSelector();
             updateCompDisplayState();
             startLiveDataSyncEngines();
+        }
+
+        window.createNewCompetitionPrompt = async function() {
+            let newName = prompt("Enter a title for your brand-new active Competition profile:", "District Qualifiers");
+            if (!newName || !newName.trim()) return;
+
+            const generatedId = "comp_" + Date.now();
+            const newCompData = {
+                name: newName.trim(),
+                dateStamp: new Date().toISOString().split('T')[0],
+                isArchived: false,
+                createdTime: Date.now()
+            };
+
+            await setDoc(doc(db, "competitions", generatedId), newCompData);
+            competitionsMap.set(generatedId, newCompData);
+            activeCompetitionId = generatedId;
+
+            repopulateCompetitionDropdownSelector();
+            updateCompDisplayState();
+            renderTable();
         }
 
         function repopulateCompetitionDropdownSelector() {
@@ -877,23 +907,7 @@
             
             if (targetComp && targetComp.isArchived) {
                 if (confirm(`The selected tracking context profile is archived. Do you want to establish a brand-new active Competition Profile now?`)) {
-                    let newName = prompt("Enter Name for new active Tournament tracking profile:", "Qualifiers Matrix Event");
-                    if (newName && newName.trim()) {
-                        const generatedId = "comp_" + Date.now();
-                        const newCompData = {
-                            name: newName.trim(),
-                            dateStamp: new Date().toISOString().split('T')[0],
-                            isArchived: false,
-                            createdTime: Date.now()
-                        };
-                        await setDoc(doc(db, "competitions", generatedId), newCompData);
-                        competitionsMap.set(generatedId, newCompData);
-                        activeCompetitionId = generatedId;
-                        repopulateCompetitionDropdownSelector();
-                        updateCompDisplayState();
-                    } else {
-                        return;
-                    }
+                    await createNewCompetitionPrompt();
                 } else {
                     return;
                 }
@@ -942,7 +956,7 @@
 
         window.saveTeamNotesAndAutoSummarize = async function(teamNum, textareaElement) {
             const notesText = textareaElement.value.trim();
-            const button = textareaElement.nextElementSibling.nextElementSibling; // Targets save button specifically
+            const button = textareaElement.nextElementSibling.nextElementSibling;
             
             button.innerText = "Saving & Summarizing...";
             button.disabled = true;
@@ -1151,7 +1165,6 @@
 
                 const inputsDisabledAttr = (isArchived || team.isCareerCompiledMock) ? "disabled" : "";
                 
-                // Keep notes perfectly clean and blank when truly missing
                 const cleanNotesString = (team.teamNotes !== undefined && team.teamNotes !== null && team.teamNotes !== "undefined") ? team.teamNotes : "";
 
                 tr.innerHTML = `
