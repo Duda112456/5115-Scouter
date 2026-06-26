@@ -300,6 +300,7 @@
             margin-top: -10px;
             margin-bottom: 20px;
             background: var(--bg-card);
+            padding: 166px 16px 16px 16px; /* standard box padding balance */
             padding: 16px;
             border-radius: 16px;
             border: 1px solid var(--primary);
@@ -599,7 +600,6 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, doc, setDoc, onSnapshot, updateDoc, getDocs, getDoc, deleteDoc, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        import { GoogleGenAI } from "https://esm.run/@google/genai";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAcPbzSt-iY8RVsYdZpvIfAAS86CwSYa5Q",
@@ -973,31 +973,46 @@
             
             const entryId = `${activeCompetitionId}_${teamNum}`;
             
-            // 1. Immediately save raw notes data to Firebase
+            // 1. Instantly write the raw text inputs to your Firestore Database
             await updateDoc(doc(db, "team_entries", entryId), {
                 teamNotes: notesText
             });
 
+            // 2. If text exists, issue a direct REST API call to the Gemini 2.5 Flash Endpoint
             if (notesText) {
                 try {
-                    // 2. Initialize using the custom client class initialization structure 
-                    const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+                    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+                    
                     const promptText = `You are a scouting assistant for FTC Team 5115. Summarize these raw scout match notes into short bullet points (max 3 bullets). Focus strictly on robot performance, autonomous capabilities, or bugs. Output raw HTML bullets (<ul> and <li> tags) only. Raw Notes: "${notesText}"`;
 
-                    // Fix generation endpoint structure to utilize valid web SDK patterns
-                    const response = await ai.models.generateContent({
-                        model: 'gemini-2.5-flash',
-                        contents: promptText,
+                    const response = await fetch(endpoint, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            contents: [{
+                                parts: [{ text: promptText }]
+                            }]
+                        })
                     });
 
-                    // Parse text accurately safely handling properties returned by esm client wrapper
-                    const cleanHtmlSummary = response.text ? response.text.trim() : "";
+                    const data = await response.json();
                     
-                    if (cleanHtmlSummary) {
-                        await updateDoc(doc(db, "team_entries", entryId), { aiSummary: cleanHtmlSummary });
+                    // Extract the text output safely from the Gemini REST response structure
+                    if (data.candidates && data.candidates[0].content.parts[0].text) {
+                        let cleanHtmlSummary = data.candidates[0].content.parts[0].text.trim();
+                        
+                        // Clean up markdown block wraps if the model accidentally returns them
+                        cleanHtmlSummary = cleanHtmlSummary.replace(/^```html\s*/i, '').replace(/```$/, '').trim();
+
+                        // Update the Firestore document with the new AI summary
+                        await updateDoc(doc(db, "team_entries", entryId), { 
+                            aiSummary: cleanHtmlSummary 
+                        });
                     }
                 } catch (err) {
-                    console.error("Gemini Failure Encountered:", err);
+                    console.error("Gemini Direct API Call Failed:", err);
                 }
             }
 
