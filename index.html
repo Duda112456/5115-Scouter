@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<!DOCTYPE html><html lang="en"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>5115 Scouter Dashboard Pro</title>
@@ -105,7 +103,7 @@
         .app-view.active-view { display: block; }
 
         /* Form Layout */
-        form { 
+        form, .upload-container { 
             background: var(--bg-card); 
             padding: 20px; 
             border-radius: 16px; 
@@ -377,7 +375,44 @@
 
         .notes-clear { clear: both; }
 
-        /* Floating Pill Navbar with Sliding Slider Animation Track */
+        /* Camera / Upload Scanner Box Layout styles */
+        .image-capture-zone {
+            border: 2px dashed var(--border-color);
+            border-radius: 12px;
+            padding: 30px 15px;
+            text-align: center;
+            background: rgba(10, 5, 20, 0.4);
+            cursor: pointer;
+            transition: all 0.25s ease;
+            margin-bottom: 15px;
+        }
+        .image-capture-zone:hover {
+            border-color: var(--primary);
+            background: rgba(255, 115, 0, 0.04);
+        }
+        .image-capture-zone svg {
+            width: 40px;
+            height: 40px;
+            fill: var(--text-muted);
+            margin-bottom: 10px;
+        }
+        #imagePreviewFrame {
+            max-width: 100%;
+            max-height: 250px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            display: none;
+            margin: 15px auto 0 auto;
+        }
+        .scan-status-log {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            text-align: center;
+            margin-top: 10px;
+            font-style: italic;
+        }
+
+        /* Floating Pill Navbar with Sliding Slider Animation Track (Accommodates 3 tabs) */
         .sketch-navbar-container {
             position: fixed;
             bottom: 25px;
@@ -401,13 +436,13 @@
             overflow: hidden;
         }
 
-        /* Animated sliding tab indicator bubble backdrop */
+        /* Animated sliding tab indicator bubble backdrop resized for 1/3 splits */
         .nav-slider-bubble {
             position: absolute;
             top: 4px;
             left: 4px;
             height: calc(100% - 8px);
-            width: calc(50% - 6px);
+            width: calc(33.333% - 5.33px);
             background-color: var(--primary);
             border-radius: 35px;
             transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
@@ -418,15 +453,15 @@
             background: transparent;
             border: none;
             color: var(--text-muted);
-            padding: 12px 24px;
+            padding: 12px 18px;
             border-radius: 30px;
             cursor: pointer;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             font-weight: 700;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 6px;
             position: relative;
             z-index: 2; 
             transition: color 0.25s ease;
@@ -436,8 +471,8 @@
         }
 
         .nav-pill-btn svg {
-            width: 18px;
-            height: 18px;
+            width: 16px;
+            height: 16px;
             fill: currentColor;
             display: block;
             flex-shrink: 0;
@@ -452,6 +487,8 @@
             button { width: auto; padding: 12px 30px; align-self: end; }
             .controls { flex-direction: row; align-items: center; }
             .controls select { width: auto; min-width: 250px; }
+            .nav-pill-btn { padding: 12px 24px; font-size: 0.9rem; gap: 8px; }
+            .nav-pill-btn svg { width: 18px; height: 18px; }
             
             table { 
                 display: table; 
@@ -520,6 +557,38 @@
         </div>
     </div>
 
+    <div id="rankingsView" class="app-view active-view">
+        <div class="controls">
+            <label for="sortBy"><strong>Filter Rank Hierarchy:</strong></label>
+            <select id="sortBy" onchange="renderTable()">
+                <option value="overallOpr" id="optOverallOpr">Overall OPR</option>
+                <option value="allianceRank" id="optAllianceRank">Team Rank Hierarchy</option>
+                <option value="autoOpr">Auto OPR</option>
+                <option value="teleopOpr">Teleop OPR</option>
+                <option value="avgScore">Avg. Points</option>
+                <option value="endgame">Endgame Points</option>
+            </select>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Team Rank</th>
+                    <th>Team #</th>
+                    <th>Team Name</th>
+                    <th>Overall OPR</th>
+                    <th>Auto OPR</th>
+                    <th>Teleop OPR</th>
+                    <th>Avg Points</th>
+                    <th>Endgame Pts</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="teamsTableBody">
+            </tbody>
+        </table>
+    </div>
+
     <div id="logView" class="app-view">
         <form id="teamForm">
             <h2 id="formHeaderTitle">Log / Edit Team Info</h2>
@@ -553,36 +622,26 @@
         </form>
     </div>
 
-    <div id="rankingsView" class="app-view active-view">
-        <div class="controls">
-            <label for="sortBy"><strong>Filter Rank Hierarchy:</strong></label>
-            <select id="sortBy" onchange="renderTable()">
-                <option value="overallOpr" id="optOverallOpr">Overall OPR</option>
-                <option value="allianceRank" id="optAllianceRank">Team Rank Hierarchy</option>
-                <option value="autoOpr">Auto OPR</option>
-                <option value="teleopOpr">Teleop OPR</option>
-                <option value="avgScore">Avg. Points</option>
-                <option value="endgame">Endgame Points</option>
-            </select>
+    <div id="aiScanView" class="app-view">
+        <div class="upload-container">
+            <h2>AI List Photo Scanner</h2>
+            <p style="color: var(--text-muted); font-size: 0.88rem; margin-bottom: 20px; line-height: 1.4;">
+                Take a photo or upload an image containing a ranking matrix, printout list, or match matrix. The AI will extract team identification and performance indices directly into a freshly created event scope.
+            </p>
+            
+            <div class="image-capture-zone" onclick="document.getElementById('nativeCameraInput').click()">
+                <svg viewBox="0 0 24 24"><path d="M4 4h3l2-2h6l2 2h3c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2zm8 3c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0 8c-1.65 0-3-1.35-3-3s1.35-3 3-3 3 1.35 3 3-1.35 3-3 3z"/></svg>
+                <div style="font-weight: bold; font-size: 1rem; margin-bottom: 4px;">Tap to Snapshot or Upload</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">Supports Camera Capture & Image Documents</div>
+            </div>
+            
+            <input type="file" id="nativeCameraInput" accept="image/*" style="display: none;" onchange="handleImageSelection(this)">
+            
+            <img id="imagePreviewFrame" alt="Capture Preview">
+            <div id="scanStatusDisplay" class="scan-status-log"></div>
+            
+            <button id="processScanBtn" class="btn-success" style="display: none; margin-top: 20px;" onclick="executeAIVisionParsing()">Run AI Analysis</button>
         </div>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>Team Rank</th>
-                    <th>Team #</th>
-                    <th>Team Name</th>
-                    <th>Overall OPR</th>
-                    <th>Auto OPR</th>
-                    <th>Teleop OPR</th>
-                    <th>Avg Points</th>
-                    <th>Endgame Pts</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="teamsTableBody">
-            </tbody>
-        </table>
     </div>
 
     <div class="sketch-navbar-container">
@@ -591,11 +650,15 @@
             
             <button class="nav-pill-btn active-tab" onclick="switchView('rankingsView', this, 0)">
                 <svg viewBox="0 0 24 24"><path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v3c0 2.42 1.72 4.44 4.005 4.901C7.914 15.91 10.13 17 12 17s4.086-1.09 4.995-4.099C19.28 12.44 21 10.42 21 8V7c0-1.1-.9-2-2-2zm-2 5c0 1.2-.53 2.18-1.5 2.65V5h1.5v5zM5 10V5h1.5v7.65C5.53 12.18 5 11.2 5 10zm7 9c-1.66 0-3 1.34-3 3h6c0-1.66-1.34-3-3-3z"/></svg>
-                Team Rankings
+                Rankings
             </button>
             <button class="nav-pill-btn" onclick="switchView('logView', this, 1)">
                 <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
-                Log/Edit Info
+                Log Info
+            </button>
+            <button class="nav-pill-btn" onclick="switchView('aiScanView', this, 2)">
+                <svg viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
+                AI Paper Scan
             </button>
         </div>
     </div>
@@ -634,6 +697,7 @@
         let activeViewId = 'rankingsView';
         let bannerQueue = [];
         let bannerIsRunning = false;
+        let localCapturedBase64Image = null; // Memory allocation reference holder for Gemini vision data streams
 
         const GEMINI_API_KEY = "AQ.Ab8RN6Ijygst1gJWXfEkTnL5XdRMdEdwR2xlreF2Sm-npBWemw";
 
@@ -740,6 +804,7 @@
 
         function repopulateCompetitionDropdownSelector() {
             const selector = document.getElementById('compSelector');
+            if(!selector) return;
             selector.innerHTML = '';
             competitionsMap.forEach((data, id) => {
                 const opt = document.createElement('option');
@@ -890,6 +955,7 @@
             document.getElementById(viewId).classList.add('active-view');
             clickedButton.classList.add('active-tab');
             
+            // Adjust tracker translation based on 3 active tabs (100% * index)
             const bubbleOffset = indexPosition * 100;
             document.getElementById('navBubble').style.transform = `translateX(${bubbleOffset}%)`;
             window.scrollTo(0, 0);
@@ -1005,7 +1071,7 @@
 
         window.toggleNotesDrawer = function(teamNum) {
             const drawer = document.getElementById(`notes-${teamNum}`);
-            drawer.classList.toggle('open');
+            if(drawer) drawer.classList.toggle('open');
         }
 
         function triggerTickerBanner(teamNumber, teamName, category) {
@@ -1038,6 +1104,173 @@
                 processNextBannerItem();
             }, 10000);
         }
+
+        /* ------------------ AI IMAGE VISION SCANNER ENGINE ------------------ */
+        window.handleImageSelection = function(inputEl) {
+            const file = inputEl.files[0];
+            if (!file) return;
+
+            const status = document.getElementById('scanStatusDisplay');
+            const preview = document.getElementById('imagePreviewFrame');
+            const runBtn = document.getElementById('processScanBtn');
+
+            status.innerText = "Processing image asset selection pipeline...";
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const fullDataUrl = e.target.result;
+                preview.src = fullDataUrl;
+                preview.style.display = "block";
+                
+                // Extract clean raw Base64 data block stripping out data:image header prefix
+                localCapturedBase64Image = fullDataUrl.split(',')[1];
+                
+                status.innerText = "Image source prepared. Confirm execution via the action button below.";
+                runBtn.style.display = "block";
+            };
+            reader.readAsDataURL(file);
+        }
+
+        window.executeAIVisionParsing = async function() {
+            if (!localCapturedBase64Image) {
+                alert("Please drop or snapshot an input asset baseline before parsing.");
+                return;
+            }
+
+            const targetCompName = prompt("Enter a title for this new scanned competition event profile context:", "Scanned Matrix Tournament");
+            if (!targetCompName || !targetCompName.trim()) {
+                alert("Event creation aborted. A valid context label is mandatory.");
+                return;
+            }
+
+            const status = document.getElementById('scanStatusDisplay');
+            const runBtn = document.getElementById('processScanBtn');
+
+            runBtn.disabled = true;
+            runBtn.innerText = "AI System Processing...";
+            status.innerHTML = "Initializing Gemini Multimodal Core Engine... <br>Analyzing telemetry columns and handwriting configurations.";
+
+            try {
+                const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+                
+                const promptString = `You are an expert robotics scouting assistant for FRC/FTC Team 5115. Look at this picture of a team ranking or matrix sheet. 
+                Extract every team listed in the photo. Look closely for columns representing data items like Team Number, Team Name, Auto OPR, Teleop OPR, Avg Points, or Endgame Points.
+                Extract all of them cleanly. If any values are missing, unreadable, or not present in the columns, use a logical default of 0.
+                
+                CRITICAL REQUIREMENT: Return your output strictly as a valid JSON array. Do not include any markdown backticks, no '\`\`\`json' wraps, and no conversational text introduction or conclusion. 
+                
+                Structure the JSON items exactly like this prototype schema template:
+                [
+                  {
+                    "teamNumber": "5115",
+                    "teamName": "RoboKnights",
+                    "autoOpr": 12.5,
+                    "teleopOpr": 45.0,
+                    "avgScore": 57.5,
+                    "endgame": 10
+                  }
+                ]`;
+
+                const response = await ai.models.generateContent({
+                  model: 'gemini-2.5-flash',
+                  contents: [
+                    {
+                      inlineData: {
+                        mimeType: "image/jpeg",
+                        data: localCapturedBase64Image
+                      }
+                    },
+                    promptString
+                  ]
+                });
+
+                const rawText = response.text.trim();
+                let cleanParsedArray = [];
+                
+                try {
+                    // Safety check to slice away accidental text structures if the model broke JSON compliance constraints
+                    const startIndex = rawText.indexOf('[');
+                    const endIndex = rawText.lastIndexOf(']') + 1;
+                    if(startIndex !== -1 && endIndex !== -1) {
+                        cleanParsedArray = JSON.parse(rawText.substring(startIndex, endIndex));
+                    } else {
+                        throw new Error("JSON structure boundaries not identified.");
+                    }
+                } catch(jsonErr) {
+                    console.error("Bad AI Output String raw trace: ", rawText);
+                    throw new Error("The AI response did not return a clean structured data array.");
+                }
+
+                if (!Array.isArray(cleanParsedArray) || cleanParsedArray.length === 0) {
+                    throw new Error("Zero team entities were mapped out from the input sheet.");
+                }
+
+                // Step A: Establish the new Tournament Profile Document
+                const generatedCompId = "comp_" + Date.now();
+                const newCompConfig = {
+                    name: targetCompName.trim(),
+                    dateStamp: new Date().toISOString().split('T')[0],
+                    isArchived: false,
+                    createdTime: Date.now()
+                };
+                await setDoc(doc(db, "competitions", generatedCompId), newCompConfig);
+                competitionsMap.set(generatedCompId, newCompConfig);
+                activeCompetitionId = generatedCompId;
+
+                // Step B: Loop data extractions directly into Firestore entries
+                for (const team of cleanParsedArray) {
+                    const cleanNum = String(team.teamNumber || "").trim();
+                    if (!cleanNum) continue;
+
+                    const cleanName = String(team.teamName || "Unknown").trim();
+                    const entryDocId = `${generatedCompId}_${cleanNum}`;
+
+                    const teamPayload = {
+                        entryDocId: entryDocId,
+                        competitionId: generatedCompId,
+                        teamNumber: cleanNum,
+                        teamName: cleanName,
+                        autoOpr: parseFloat(team.autoOpr) || 0,
+                        teleopOpr: parseFloat(team.teleopOpr) || 0,
+                        avgScore: parseFloat(team.avgScore) || 0,
+                        endgame: parseInt(team.endgame) || 0,
+                        allianceRank: 999
+                    };
+
+                    await setDoc(doc(db, "team_entries", entryDocId), teamPayload, { merge: true });
+
+                    const globalProfileData = {
+                        teamNumber: cleanNum,
+                        teamName: cleanName,
+                        lastUpdated: Date.now()
+                    };
+                    await setDoc(doc(db, "global_team_profiles", cleanNum), globalProfileData, { merge: true });
+                }
+
+                // Reset Upload UI metrics
+                status.innerText = `Success! Established new tracking context and loaded ${cleanParsedArray.length} team telemetry metrics blocks.`;
+                document.getElementById('nativeCameraInput').value = "";
+                document.getElementById('imagePreviewFrame').style.display = "none";
+                localCapturedBase64Image = null;
+                runBtn.style.display = "none";
+
+                // Repopulate tracking metrics context components and route back to main ranking layout view
+                repopulateCompetitionDropdownSelector();
+                updateCompDisplayState();
+                
+                setTimeout(() => {
+                    switchView('rankingsView', document.querySelectorAll('.nav-pill-btn')[0], 0);
+                }, 1200);
+
+            } catch (err) {
+                console.error("AI Scanner Failure:", err);
+                status.innerHTML = `<span style="color:var(--danger)">Parsing Failure: ${err.message || "Unknown connectivity matrix timeout."}</span>`;
+            } finally {
+                runBtn.disabled = false;
+                runBtn.innerText = "Run AI Analysis";
+            }
+        }
+        /* -------------------------------------------------------------------- */
 
         let isInitialLoad = true;
         function startLiveDataSyncEngines() {
@@ -1150,6 +1383,9 @@
         }
 
         function renderTable() {
+            const tbody = document.getElementById('teamsTableBody');
+            if (!tbody) return;
+
             const sortBy = document.getElementById('sortBy').value;
             let targetDisplayData = generateCompiledDisplayArray();
             
@@ -1161,14 +1397,13 @@
                 }
             });
 
-            const tbody = document.getElementById('teamsTableBody');
             document.querySelectorAll('tr[data-team]').forEach(row => rowVisibilityObserver.unobserve(row));
             tbody.innerHTML = '';
 
             const currentCompContext = competitionsMap.get(activeCompetitionId);
             const isArchived = currentCompContext ? currentCompContext.isArchived : false;
 
-            targetDisplayData.forEach((team, idx) => {
+            targetDisplayData.forEach((team) => {
                 const tr = document.createElement('tr');
                 tr.id = `row-${team.teamNumber}`;
                 tr.setAttribute('data-team', team.teamNumber);
