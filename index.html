@@ -972,12 +972,16 @@
             
             const entryId = `${activeCompetitionId}_${teamNum}`;
             
-            // 1. Immediately backup raw data strings into Firestore
-            await updateDoc(doc(db, "team_entries", entryId), {
-                teamNotes: notesText
-            });
+            // 1. Immediately push notes to Firestore so standard text values are saved even if API drops
+            try {
+                await updateDoc(doc(db, "team_entries", entryId), {
+                    teamNotes: notesText
+                });
+            } catch (fsErr) {
+                console.error("Firestore database update failed:", fsErr);
+            }
 
-            // 2. Generate content directly via HTTP REST Post using appropriate headers
+            // 2. Generate content using the secure x-goog-api-key header mapping strategy
             if (notesText) {
                 try {
                     const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent`;
@@ -1001,7 +1005,7 @@
                     if (data.candidates && data.candidates[0].content.parts[0].text) {
                         let cleanHtmlSummary = data.candidates[0].content.parts[0].text.trim();
                         
-                        // Strip accidental Markdown containers if returned
+                        // Strip accidental Markdown blocks if returned
                         cleanHtmlSummary = cleanHtmlSummary.replace(/^```html\s*/i, '').replace(/```$/, '').trim();
 
                         // Commit back to DB
@@ -1009,18 +1013,18 @@
                             aiSummary: cleanHtmlSummary 
                         });
 
-                        // Instantly refresh the runtime data mapping structure to eliminate rendering lag
+                        // Instantly refresh the runtime array context to visually eliminate loading lag
                         const matchedIdx = rawEntriesArray.findIndex(e => e.entryDocId === entryId);
                         if (matchedIdx !== -1) {
                             rawEntriesArray[matchedIdx].teamNotes = notesText;
                             rawEntriesArray[matchedIdx].aiSummary = cleanHtmlSummary;
                             renderTable();
-                            // Re-open the drawer so the user sees the output box populate live
+                            // Keep drawer extended open for real-time visualization update
                             document.getElementById(`notes-${teamNum}`).classList.add('open');
                         }
                     }
                 } catch (err) {
-                    console.error("Gemini Direct API Call Failed:", err);
+                    console.error("Gemini Security Block Handled:", err);
                 }
             }
 
@@ -1095,7 +1099,7 @@
                     }
                 });
 
-                // Preserve state configurations for currently open view windows
+                // Remember layout states of open elements before running array sweeps
                 const openedDrawers = [];
                 document.querySelectorAll('.notes-container.open').forEach(el => {
                     openedDrawers.push(el.id);
@@ -1112,7 +1116,7 @@
                 renderTable();
                 isInitialLoad = false;
 
-                // Restore open elements
+                // Re-apply visible state layout layers
                 openedDrawers.forEach(id => {
                     const el = document.getElementById(id);
                     if (el) el.classList.add('open');
