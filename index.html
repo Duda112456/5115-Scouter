@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>5115 Scouter Dashboard</title>
+    <title>5115 Scouter Dashboard Pro</title>
     <style>
         /* Team 5115 Brand Color Identity */
         :root {
@@ -14,6 +14,8 @@
             --text-main: #f3f0f7;     /* High Contrast Text */
             --text-muted: #a497bd;    /* Lavender Gray Subtexts */
             --border-color: #2b1c47;  /* Purple Framing */
+            --danger: #dc3545;        /* Crimson Red for Delete Actions */
+            --success: #28a745;       /* Green for positive states */
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -22,20 +24,81 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
             background-color: var(--bg-dark); 
             color: var(--text-main); 
-            padding: 55px 15px 105px 15px; /* Top padding prevents layout clash with sticky banner */
+            padding: 55px 15px 105px 15px; 
         }
 
         h1 { 
             color: var(--primary); 
             font-size: 1.6rem; 
             padding-bottom: 12px; 
-            margin-bottom: 20px;
-            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 10px;
             text-transform: uppercase;
             letter-spacing: 1px;
             text-align: center;
         }
         h2 { font-size: 1.2rem; margin-bottom: 15px; color: var(--text-main); text-transform: uppercase; letter-spacing: 0.5px;}
+
+        /* Top Bar Info */
+        .comp-status-bar {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+            justify-content: space-between;
+        }
+        @media (min-width: 768px) {
+            .comp-status-bar { flex-direction: row; }
+        }
+
+        .active-comp-info {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+        }
+        .active-comp-info strong {
+            color: var(--primary);
+        }
+        .frozen-badge {
+            background: rgba(220, 53, 69, 0.2);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            margin-left: 6px;
+            text-transform: uppercase;
+        }
+
+        /* Toggle Button Group Styles */
+        .toggle-group {
+            display: inline-flex;
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            padding: 4px;
+            border-radius: 30px;
+        }
+        .toggle-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 6px 16px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            border-radius: 20px;
+            cursor: pointer;
+            width: auto;
+            margin-top: 0;
+            transition: all 0.2s ease;
+        }
+        .toggle-btn.active {
+            background: var(--primary);
+            color: #fff;
+        }
 
         /* Tab Visibility Control */
         .app-view { display: none; }
@@ -83,6 +146,18 @@
         }
         button:hover { background: var(--primary-hover); }
 
+        .btn-secondary {
+            background: #23163d;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+        }
+        .btn-secondary:hover { background: #312054; }
+
+        .btn-danger {
+            background: var(--danger);
+        }
+        .btn-danger:hover { background: #bd2130; }
+
         /* Sorting Controls Box */
         .controls { 
             margin-bottom: 20px; 
@@ -129,6 +204,11 @@
             border: 2px solid var(--primary); 
             background: var(--bg-dark);
             color: var(--primary);
+        }
+        .alliance-input:disabled {
+            border-color: var(--border-color);
+            color: var(--text-muted);
+            opacity: 0.6;
         }
 
         /* 3x Orange Flash Notification Effects */
@@ -246,6 +326,7 @@
             display: flex;
             gap: 8px;
             justify-content: flex-end;
+            flex-wrap: wrap;
         }
         .notes-save-btn {
             padding: 8px 14px;
@@ -264,14 +345,19 @@
             align-items: center;
             gap: 5px;
         }
-        .notes-ai-btn:hover {
-            background: #4c1d93;
+        .notes-ai-btn:hover { background: #4c1d93; }
+        .notes-ai-btn svg { width: 14px; height: 14px; fill: #fff; }
+        
+        .profile-delete-btn {
+            background: var(--danger);
+            padding: 8px 14px;
+            font-size: 0.85rem;
+            width: auto;
+            margin-top: 0;
+            margin-right: auto; /* Push to left side */
         }
-        .notes-ai-btn svg {
-            width: 14px;
-            height: 14px;
-            fill: #fff;
-        }
+        .profile-delete-btn:hover { background: #bd2130; }
+
         .notes-clear { clear: both; }
 
         /* Floating Pill Navbar with Sliding Slider Animation Track */
@@ -362,7 +448,7 @@
             .alliance-input { width: 70px; }
 
             .notes-row { display: table-row; }
-            .notes-td { display: table-cell; colspan: 7; padding: 0 14px 14px 14px; border-top: none; }
+            .notes-td { display: table-cell; colspan: 8; padding: 0 14px 14px 14px; border-top: none; }
             .notes-container { margin-top: 0; }
         }
     </style>
@@ -375,13 +461,30 @@
 
     <h1><span style="color:var(--text-main)">5115</span> Scouter</h1>
 
+    <div class="comp-status-bar">
+        <div class="active-comp-info">
+            Target Event: <strong id="currentCompDisplay">Loading Event Context...</strong>
+            <span id="frozenBadge" class="frozen-badge" style="display:none;">Archived/Frozen</span>
+        </div>
+        
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+            <div class="toggle-group">
+                <button id="viewCompToggle" class="toggle-btn active" onclick="setStatsScope('current')">Event Stats</button>
+                <button id="viewCareerToggle" class="toggle-btn" onclick="setStatsScope('career')">Career Stats</button>
+            </div>
+            <select id="compSelector" onchange="changeActiveCompetitionContext(this.value)" style="padding: 6px 12px; font-size: 0.85rem; border-radius: 20px;">
+                </select>
+            <button class="btn-secondary" onclick="archiveCurrentCompetition()" style="padding: 6px 12px; font-size: 0.85rem; border-radius: 20px; width: auto; margin-top:0;">Archive Event</button>
+        </div>
+    </div>
+
     <div id="logView" class="app-view">
         <form id="teamForm">
-            <h2>Log / Edit Team Info</h2>
+            <h2 id="formHeaderTitle">Log / Edit Team Info</h2>
             <div class="form-grid">
                 <div class="form-group">
                     <label for="teamNumber">Team Number</label>
-                    <input type="text" id="teamNumber" required placeholder="e.g., 5115" inputmode="numeric">
+                    <input type="text" id="teamNumber" required placeholder="e.g., 5115" inputmode="numeric" oninput="attemptProfileAutoSync(this.value)">
                 </div>
                 <div class="form-group">
                     <label for="teamName">Team Name</label>
@@ -403,7 +506,7 @@
                     <label for="endgame">Endgame Points</label>
                     <input type="number" id="endgame" step="1" required placeholder="0">
                 </div>
-                <button type="submit">Save Entry</button>
+                <button type="submit" id="formSubmitBtn">Save Entry</button>
             </div>
         </form>
     </div>
@@ -411,7 +514,7 @@
     <div id="rankingsView" class="app-view active-view">
         <div class="controls">
             <label for="sortBy"><strong>Filter Rank Hierarchy:</strong></label>
-            <select id="sortBy" onchange="loadTeams()">
+            <select id="sortBy" onchange="renderTable()">
                 <option value="allianceRank">Alliance Selection Rank</option>
                 <option value="autoOpr">Auto OPR</option>
                 <option value="teleopOpr">Teleop OPR</option>
@@ -430,6 +533,7 @@
                     <th>Teleop OPR</th>
                     <th>Avg Points</th>
                     <th>Endgame Pts</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody id="teamsTableBody">
@@ -447,14 +551,14 @@
             </button>
             <button class="nav-pill-btn" onclick="switchView('logView', this, 1)">
                 <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
-                Log/Edit Team Info
+                Log/Edit Info
             </button>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, doc, setDoc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, doc, setDoc, onSnapshot, updateDoc, getDocs, getDoc, deleteDoc, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { GoogleGenAI } from "https://esm.run/@google/genai";
 
         const firebaseConfig = {
@@ -469,10 +573,20 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        const teamsCollection = collection(db, "ftc_teams");
+        
+        // Revised Collection Architecture Layout
+        const compsCollection = collection(db, "competitions");
+        const entriesCollection = collection(db, "team_entries");
+        const globalProfilesCollection = collection(db, "global_team_profiles");
 
-        let localTeamsArray = [];
-        let historicalTeamsMap = new Map(); 
+        let activeCompetitionId = "";
+        let competitionsMap = new Map();
+        let currentScope = "current"; // "current" or "career"
+
+        let rawEntriesArray = [];
+        let globalProfilesMap = new Map();
+
+        let historicalEntriesMap = new Map(); 
         let observedVisibleTeams = new Set(); 
         let activeViewId = 'rankingsView';
         let bannerQueue = [];
@@ -480,7 +594,6 @@
 
         const GEMINI_API_KEY = "AQ.Ab8RN6Ijygst1gJWXfEkTnL5XdRMdEdwR2xlreF2Sm-npBWemw";
 
-        // Fixed Mobile-Friendly Visibility Tracker (Checks bounding client rectangles as a backup to IntersectionObserver)
         const rowVisibilityObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 const teamNum = entry.target.getAttribute('data-team');
@@ -503,7 +616,134 @@
             );
         }
 
-        // Dynamic Tab Routing Switch
+        // Initialize App: Checks or requests Competition data
+        async function initializeScoutingEnvironment() {
+            const snap = await getDocs(compsCollection);
+            let contextList = [];
+            snap.forEach(d => {
+                competitionsMap.set(d.id, d.data());
+                contextList.push({id: d.id, ...d.data()});
+            });
+
+            // Format current ISO Date stamp
+            const todayStr = new Date().toISOString().split('T')[0];
+            let activeComp = contextList.find(c => c.dateStamp === todayStr && !c.isArchived);
+
+            if (!activeComp) {
+                // If there's no active competition created today, look for the most recent unarchived one
+                const unarchivedComps = contextList.filter(c => !c.isArchived);
+                if (unarchivedComps.length > 0) {
+                    // Sort to find the latest
+                    unarchivedComps.sort((a,b) => b.createdTime - a.createdTime);
+                    activeComp = unarchivedComps[0];
+                }
+            }
+
+            if (!activeComp) {
+                // Prompt user to name a new competition environment
+                let newName = prompt("First launch initialization sequence detected! Please name your current Competition/Tournament Event profile:", "Qualifiers Day 1");
+                if (!newName || !newName.trim()) newName = "Default Tournament " + todayStr;
+                
+                const generatedId = "comp_" + Date.now();
+                const newCompData = {
+                    name: newName.trim(),
+                    dateStamp: todayStr,
+                    isArchived: false,
+                    createdTime: Date.now()
+                };
+
+                await setDoc(doc(db, "competitions", generatedId), newCompData);
+                competitionsMap.set(generatedId, newCompData);
+                activeCompetitionId = generatedId;
+            } else {
+                activeCompetitionId = activeComp.id;
+            }
+
+            repopulateCompetitionDropdownSelector();
+            updateCompDisplayState();
+            startLiveDataSyncEngines();
+        }
+
+        function repopulateCompetitionDropdownSelector() {
+            const selector = document.getElementById('compSelector');
+            selector.innerHTML = '';
+            competitionsMap.forEach((data, id) => {
+                const opt = document.createElement('option');
+                opt.value = id;
+                opt.innerText = data.name + (data.isArchived ? " [Archived]" : "");
+                if (id === activeCompetitionId) opt.selected = true;
+                selector.appendChild(opt);
+            });
+        }
+
+        function updateCompDisplayState() {
+            const comp = competitionsMap.get(activeCompetitionId);
+            if (comp) {
+                document.getElementById('currentCompDisplay').innerText = comp.name;
+                const frozenBadge = document.getElementById('frozenBadge');
+                const formInputs = document.querySelectorAll('#teamForm input, #teamForm button');
+                
+                if (comp.isArchived) {
+                    frozenBadge.style.display = "inline-block";
+                    document.getElementById('formHeaderTitle').innerText = "Tournament Locked (Archived Mode)";
+                    document.getElementById('formSubmitBtn').disabled = true;
+                    document.getElementById('formSubmitBtn').innerText = "Locked";
+                } else {
+                    frozenBadge.style.display = "none";
+                    document.getElementById('formHeaderTitle').innerText = "Log / Edit Team Info";
+                    document.getElementById('formSubmitBtn').disabled = false;
+                    document.getElementById('formSubmitBtn').innerText = "Save Entry";
+                }
+            }
+        }
+
+        window.changeActiveCompetitionContext = function(selectedCompId) {
+            activeCompetitionId = selectedCompId;
+            updateCompDisplayState();
+            // Refetch or redraw layout mapping fields
+            renderTable();
+        }
+
+        window.archiveCurrentCompetition = async function() {
+            const comp = competitionsMap.get(activeCompetitionId);
+            if (!comp) return;
+            if (comp.isArchived) {
+                alert("This competition profile is already archived!");
+                return;
+            }
+            if (confirm(`Are you sure you want to archive "${comp.name}"? This freezes performance data edits from this tournament while preserving career calculations.`)) {
+                await updateDoc(doc(db, "competitions", activeCompetitionId), { isArchived: true });
+                comp.isArchived = true;
+                repopulateCompetitionDropdownSelector();
+                updateCompDisplayState();
+                renderTable();
+            }
+        }
+
+        window.setStatsScope = function(scope) {
+            currentScope = scope;
+            document.getElementById('viewCompToggle').classList.toggle('active', scope === 'current');
+            document.getElementById('viewCareerToggle').classList.toggle('active', scope === 'career');
+            renderTable();
+        }
+
+        // Auto-fills profile structures if team already exists anywhere else in the system this season
+        window.attemptProfileAutoSync = async function(teamNum) {
+            const cleanNum = teamNum.trim();
+            if (!cleanNum) return;
+            
+            const profileDoc = await getDoc(doc(db, "global_team_profiles", cleanNum));
+            if (profileDoc.exists()) {
+                const profileData = profileDoc.data();
+                const nameInput = document.getElementById('teamName');
+                // Fill if currently empty or being typed
+                if (!nameInput.value.trim() || nameInput.value === "Unknown") {
+                    nameInput.value = profileData.teamName || "";
+                }
+            }
+        }
+
+        // Tabs Route Switches
         window.switchView = function(viewId, clickedButton, indexPosition) {
             activeViewId = viewId;
             document.querySelectorAll('.app-view').forEach(view => view.classList.remove('active-view'));
@@ -517,38 +757,117 @@
             window.scrollTo(0, 0);
         }
 
-        // Form Submit Handler
+        // Integrated Delete Profiles Functionality
+        window.deleteTeamProfileData = async function(teamNum) {
+            const targetComp = competitionsMap.get(activeCompetitionId);
+            if (targetComp && targetComp.isArchived) {
+                alert("Cannot modify items. This competition environment context is locked/archived.");
+                return;
+            }
+
+            if (confirm(`🚨 DANGER ZONE: Are you sure you want to completely delete Team #${teamNum} entry metrics for the current competition event context?`)) {
+                try {
+                    const entryId = `${activeCompetitionId}_${teamNum}`;
+                    await deleteDoc(doc(db, "team_entries", entryId));
+                    alert(`Team #${teamNum} completely removed from current entry charts.`);
+                } catch (e) {
+                    console.error(e);
+                    alert("Profile removal exception error standard logs.");
+                }
+            }
+        }
+
+        // Form Submit Actions Handling
         document.getElementById('teamForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const targetComp = competitionsMap.get(activeCompetitionId);
+            if (targetComp && targetComp.isArchived) {
+                alert("Edits frozen. Please create or swap to an unarchived competition structure target event context.");
+                return;
+            }
+
+            // Check if this is the first team entered on a new day to prompt for competition choice
+            const todayStr = new Date().toISOString().split('T')[0];
+            const matchingTodayEntries = rawEntriesArray.filter(entry => {
+                const compCtx = competitionsMap.get(entry.competitionId);
+                return compCtx && compCtx.dateStamp === todayStr;
+            });
+
+            // If it's a new day and we are still using an old event context, ask to partition
+            if (matchingTodayEntries.length === 0 && targetComp.dateStamp !== todayStr) {
+                if (confirm(`First team entry of a new calendar day detected! Do you want to establish a brand-new Competition Profile for today's logs? (Cancel keeps metrics running inside "${targetComp.name}")`)) {
+                    let newName = prompt("Enter Name for today's new Tournament tracking context profile:", "Qualifiers Matrix Event");
+                    if (newName && newName.trim()) {
+                        const generatedId = "comp_" + Date.now();
+                        const newCompData = {
+                            name: newName.trim(),
+                            dateStamp: todayStr,
+                            isArchived: false,
+                            createdTime: Date.now()
+                        };
+                        await setDoc(doc(db, "competitions", generatedId), newCompData);
+                        competitionsMap.set(generatedId, newCompData);
+                        activeCompetitionId = generatedId;
+                        repopulateCompetitionDropdownSelector();
+                        updateCompDisplayState();
+                    }
+                }
+            }
+
             const teamNum = document.getElementById('teamNumber').value.trim();
-            
-            const teamData = {
+            const teamNameStr = document.getElementById('teamName').value.trim();
+            const entryDocId = `${activeCompetitionId}_${teamNum}`;
+
+            const performanceMetrics = {
+                entryDocId: entryDocId,
+                competitionId: activeCompetitionId,
                 teamNumber: teamNum,
-                teamName: document.getElementById('teamName').value.trim(),
-                autoOpr: parseFloat(document.getElementById('autoOpr').value),
-                teleopOpr: parseFloat(document.getElementById('teleopOpr').value),
-                avgScore: parseFloat(document.getElementById('avgScore').value),
-                endgame: parseInt(document.getElementById('endgame').value),
+                teamName: teamNameStr,
+                autoOpr: parseFloat(document.getElementById('autoOpr').value) || 0,
+                teleopOpr: parseFloat(document.getElementById('teleopOpr').value) || 0,
+                avgScore: parseFloat(document.getElementById('avgScore').value) || 0,
+                endgame: parseInt(document.getElementById('endgame').value) || 0
             };
 
-            await setDoc(doc(db, "ftc_teams", teamNum), teamData, { merge: true });
+            // 1. Core performance profile write to active event sub-structures
+            await setDoc(doc(db, "team_entries", entryDocId), performanceMetrics, { merge: true });
+
+            // 2. Continuous write/sync pipeline to global structural tables
+            const globalProfileData = {
+                teamNumber: teamNum,
+                teamName: teamNameStr,
+                lastUpdated: Date.now()
+            };
+            await setDoc(doc(db, "global_team_profiles", teamNum), globalProfileData, { merge: true });
+
             document.getElementById('teamForm').reset();
             switchView('rankingsView', document.querySelectorAll('.nav-pill-btn')[0], 0);
         });
 
         window.updateAllianceRank = async function(teamNum, newRank) {
+            const targetComp = competitionsMap.get(activeCompetitionId);
+            if (targetComp && targetComp.isArchived) {
+                alert("Action blocked: active timeline state frozen.");
+                return;
+            }
             const rankVal = parseInt(newRank);
-            await updateDoc(doc(db, "ftc_teams", teamNum), {
+            const entryId = `${activeCompetitionId}_${teamNum}`;
+            await updateDoc(doc(db, "team_entries", entryId), {
                 allianceRank: isNaN(rankVal) ? 999 : rankVal
             });
         }
 
         window.saveTeamNotes = async function(teamNum, textareaElement) {
+            const targetComp = competitionsMap.get(activeCompetitionId);
             const notesText = textareaElement.value.trim();
             const button = textareaElement.nextElementSibling;
             button.innerText = "Saving...";
             
-            await updateDoc(doc(db, "ftc_teams", teamNum), {
+            const entryId = `${activeCompetitionId}_${teamNum}`;
+            
+            // Notes automatically bypass tournament freeze blocks when saved into Career profile, 
+            // but we store them inside the entry structure layout for clear tournament tracking context
+            await updateDoc(doc(db, "team_entries", entryId), {
                 teamNotes: notesText
             });
             
@@ -561,7 +880,7 @@
             const rawNotes = textarea.value.trim();
 
             if (!rawNotes) {
-                alert("Please write or log some basic team notes first before attempting to summarize!");
+                alert("Please add notes first before running AI aggregation!");
                 return;
             }
 
@@ -571,7 +890,7 @@
 
             try {
                 const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
-                const prompt = `You are a scouting assistant for FTC Team 5115. Summarize these raw scout match notes into short bullet points (max 3 bullets). Focus strictly on robot performance, drive team behavior, autonomous capabilities, errors, or alliance compatibility. Output raw HTML bullets (<ul> and <li> tags) only. Do not add intro conversational text or headers. Raw Notes: "${rawNotes}"`;
+                const prompt = `You are a scouting assistant for FTC Team 5115. Summarize these raw scout match notes into short bullet points (max 3 bullets). Focus strictly on robot performance, autonomous capabilities, or bugs. Output raw HTML bullets (<ul> and <li> tags) only. Raw Notes: "${rawNotes}"`;
 
                 const response = await ai.models.generateContent({
                     model: 'gemini-2.5-flash',
@@ -579,11 +898,12 @@
                 });
 
                 const cleanHtmlSummary = response.text.trim();
-                await updateDoc(doc(db, "ftc_teams", teamNum), { aiSummary: cleanHtmlSummary });
+                const entryId = `${activeCompetitionId}_${teamNum}`;
+                await updateDoc(doc(db, "team_entries", entryId), { aiSummary: cleanHtmlSummary });
 
             } catch (err) {
-                console.error("Gemini Engine Failure:", err);
-                alert("AI generation failed.");
+                console.error("Gemini Failure:", err);
+                alert("AI processing sequence failure.");
             } finally {
                 btnElement.innerHTML = originalText;
                 btnElement.disabled = false;
@@ -595,7 +915,6 @@
             drawer.classList.toggle('open');
         }
 
-        // Global notification banner ticker processor
         function triggerTickerBanner(teamNumber, teamName, category) {
             bannerQueue.push({ teamNumber, teamName, category });
             if (!bannerIsRunning) {
@@ -627,99 +946,137 @@
             }, 10000);
         }
 
-        // Real-time Cloud Data Stream Sync Listener Engine
+        // Live Synced Tracking Engine Blocks
         let isInitialLoad = true;
-        onSnapshot(teamsCollection, (snapshot) => {
-            let changesToProcess = [];
+        function startLiveDataSyncEngines() {
+            // Monitor performance database tracks
+            onSnapshot(entriesCollection, (snapshot) => {
+                let changesToProcess = [];
 
-            snapshot.docChanges().forEach((change) => {
-                if (change.type === "modified" && !isInitialLoad) {
-                    const freshData = change.doc.data();
-                    const oldData = historicalTeamsMap.get(freshData.teamNumber) || {};
-                    
-                    let matchingCategory = "General Profile Update";
-                    
-                    // Prioritize text updates and explicit property checking to avoid falsy variations
-                    if (freshData.teamNotes !== undefined && freshData.teamNotes !== oldData.teamNotes) {
-                        matchingCategory = "Scouting Notes Added";
-                    } else if (freshData.aiSummary !== undefined && freshData.aiSummary !== oldData.aiSummary) {
-                        matchingCategory = "AI Takeaways Generated";
-                    } else if (Number(freshData.autoOpr) !== Number(oldData.autoOpr || 0)) {
-                        matchingCategory = "Auto OPR";
-                    } else if (Number(freshData.teleopOpr) !== Number(oldData.teleopOpr || 0)) {
-                        matchingCategory = "Teleop OPR";
-                    } else if (Number(freshData.avgScore) !== Number(oldData.avgScore || 0)) {
-                        matchingCategory = "Avg Points";
-                    } else if (Number(freshData.endgame) !== Number(oldData.endgame || 0)) {
-                        matchingCategory = "Endgame Points";
-                    } else if (freshData.allianceRank !== oldData.allianceRank) {
-                        matchingCategory = "Alliance Selection Rank";
-                    }
+                snapshot.docChanges().forEach((change) => {
+                    if (change.type === "modified" && !isInitialLoad) {
+                        const freshData = change.doc.data();
+                        
+                        // Alert only if updating something within our current view profile target context
+                        if (freshData.competitionId === activeCompetitionId) {
+                            const oldData = historicalEntriesMap.get(freshData.entryDocId) || {};
+                            let matchingCategory = "General Profile Update";
+                            
+                            if (freshData.teamNotes !== undefined && freshData.teamNotes !== oldData.teamNotes) matchingCategory = "Scouting Notes Added";
+                            else if (freshData.aiSummary !== undefined && freshData.aiSummary !== oldData.aiSummary) matchingCategory = "AI Takeaways Generated";
+                            else if (Number(freshData.autoOpr) !== Number(oldData.autoOpr || 0)) matchingCategory = "Auto OPR";
+                            else if (Number(freshData.teleopOpr) !== Number(oldData.teleopOpr || 0)) matchingCategory = "Teleop OPR";
+                            else if (Number(freshData.avgScore) !== Number(oldData.avgScore || 0)) matchingCategory = "Avg Points";
+                            else if (Number(freshData.endgame) !== Number(oldData.endgame || 0)) matchingCategory = "Endgame Points";
+                            else if (freshData.allianceRank !== oldData.allianceRank) matchingCategory = "Alliance Selection Rank";
 
-                    changesToProcess.push({
-                        teamNumber: freshData.teamNumber,
-                        teamName: freshData.teamName || "Unknown",
-                        category: matchingCategory
-                    });
-                }
-            });
-
-            localTeamsArray = [];
-            snapshot.forEach((doc) => {
-                let data = doc.data();
-                if (data.allianceRank === undefined) data.allianceRank = 999;
-                if (data.autoOpr === undefined) data.autoOpr = 0;
-                if (data.teleopOpr === undefined) data.teleopOpr = 0;
-                if (data.teamNotes === undefined) data.teamNotes = ""; 
-                if (data.aiSummary === undefined) data.aiSummary = ""; 
-
-                localTeamsArray.push(data);
-                historicalTeamsMap.set(data.teamNumber, data);
-            });
-
-            renderTable();
-            isInitialLoad = false;
-
-            // Trigger animations safely handling mobile display modes
-            setTimeout(() => {
-                changesToProcess.forEach(change => {
-                    const targetRow = document.getElementById(`row-${change.teamNumber}`);
-                    const isVisibleViaObserver = observedVisibleTeams.has(change.teamNumber);
-                    const isVisibleViaFallback = isElementInViewport(targetRow);
-                    const isCurrentlyVisible = (isVisibleViaObserver || isVisibleViaFallback) && (activeViewId === 'rankingsView');
-
-                    if (targetRow && isCurrentlyVisible) {
-                        targetRow.classList.remove('flash-notify');
-                        targetRow.offsetHeight; 
-                        targetRow.classList.add('flash-notify');
-                    } else {
-                        triggerTickerBanner(change.teamNumber, change.teamName, change.category);
+                            changesToProcess.push({
+                                teamNumber: freshData.teamNumber,
+                                teamName: freshData.teamName || "Unknown",
+                                category: matchingCategory
+                            });
+                        }
                     }
                 });
-            }, 50);
-        });
 
-        window.loadTeams = function() {
-            renderTable();
+                rawEntriesArray = [];
+                snapshot.forEach((doc) => {
+                    let data = doc.data();
+                    if (data.allianceRank === undefined) data.allianceRank = 999;
+                    rawEntriesArray.push(data);
+                    historicalEntriesMap.set(data.entryDocId, data);
+                });
+
+                renderTable();
+                isInitialLoad = false;
+
+                setTimeout(() => {
+                    changesToProcess.forEach(change => {
+                        const targetRow = document.getElementById(`row-${change.teamNumber}`);
+                        const isVisibleViaObserver = observedVisibleTeams.has(change.teamNumber);
+                        const isVisibleViaFallback = isElementInViewport(targetRow);
+                        const isCurrentlyVisible = (isVisibleViaObserver || isVisibleViaFallback) && (activeViewId === 'rankingsView');
+
+                        if (targetRow && isCurrentlyVisible) {
+                            targetRow.classList.remove('flash-notify');
+                            targetRow.offsetHeight; 
+                            targetRow.classList.add('flash-notify');
+                        } else {
+                            triggerTickerBanner(change.teamNumber, change.teamName, change.category);
+                        }
+                    });
+                }, 50);
+            });
+
+            // Monitor global data structural identities
+            onSnapshot(globalProfilesCollection, (snapshot) => {
+                snapshot.forEach(doc => {
+                    globalProfilesMap.set(doc.id, doc.data());
+                });
+                if (!isInitialLoad) renderTable();
+            });
+        }
+
+        // Analytical Calculations Compilation Processing Engine
+        function generateCompiledDisplayArray() {
+            if (currentScope === "current") {
+                // Return entries matching only the active context event
+                return rawEntriesArray.filter(e => e.competitionId === activeCompetitionId);
+            } else {
+                // CAREER STATS: Aggregate data across ALL tournament records
+                const uniqueTeamNumbers = [...new Set(rawEntriesArray.map(e => e.teamNumber))];
+                
+                return uniqueTeamNumbers.map(tNum => {
+                    const matches = rawEntriesArray.filter(e => e.teamNumber === tNum);
+                    const globalProfile = globalProfilesMap.get(tNum) || {};
+                    
+                    // Sum and calculate averages
+                    const autoSum = matches.reduce((acc, m) => acc + (m.autoOpr || 0), 0);
+                    const teleopSum = matches.reduce((acc, m) => acc + (m.teleopOpr || 0), 0);
+                    const scoreSum = matches.reduce((acc, m) => acc + (m.avgScore || 0), 0);
+                    const endgameSum = matches.reduce((acc, m) => acc + (m.endgame || 0), 0);
+                    
+                    // Grab current structural nodes (prioritize non-empty descriptions)
+                    const validNotesEntry = matches.find(m => m.teamNotes && m.teamNotes.trim() !== "");
+                    const validAiEntry = matches.find(m => m.aiSummary && m.aiSummary.trim() !== "");
+
+                    return {
+                        teamNumber: tNum,
+                        teamName: globalProfile.teamName || matches[0].teamName || "Unknown",
+                        autoOpr: parseFloat((autoSum / matches.length).toFixed(1)),
+                        teleopOpr: parseFloat((teleopSum / matches.length).toFixed(1)),
+                        avgScore: parseFloat((scoreSum / matches.length).toFixed(1)),
+                        endgame: parseFloat((endgameSum / matches.length).toFixed(1)),
+                        allianceRank: "--", // Career records lack standalone tactical assignment alignment
+                        teamNotes: validNotesEntry ? validNotesEntry.teamNotes : "",
+                        aiSummary: validAiEntry ? validAiEntry.aiSummary : "",
+                        isCareerCompiledMock: true
+                    };
+                });
+            }
         }
 
         function renderTable() {
             const sortBy = document.getElementById('sortBy').value;
+            let targetDisplayData = generateCompiledDisplayArray();
             
-            localTeamsArray.sort((a, b) => {
+            // Sort calculations engine matching selectors mapping
+            targetDisplayData.sort((a, b) => {
                 if (sortBy === 'allianceRank') {
-                    return a.allianceRank - b.allianceRank;
+                    return (a.allianceRank || 999) - (b.allianceRank || 999);
                 } else {
                     return (b[sortBy] || 0) - (a[sortBy] || 0);
                 }
             });
 
             const tbody = document.getElementById('teamsTableBody');
-            
             document.querySelectorAll('tr[data-team]').forEach(row => rowVisibilityObserver.unobserve(row));
             tbody.innerHTML = '';
 
-            localTeamsArray.forEach((team) => {
+            const currentCompContext = competitionsMap.get(activeCompetitionId);
+            const isArchived = currentCompContext ? currentCompContext.isArchived : false;
+
+            targetDisplayData.forEach((team) => {
                 const tr = document.createElement('tr');
                 tr.id = `row-${team.teamNumber}`;
                 tr.setAttribute('data-team', team.teamNumber);
@@ -728,13 +1085,16 @@
                     ? `<div class="ai-summary-display"><strong>⚡ AI Scouting Takeaways</strong>${team.aiSummary}</div>`
                     : '';
 
+                // Controls disable completely if current view context matches career profiles or archived locks
+                const inputsDisabledAttr = (isArchived || team.isCareerCompiledMock) ? "disabled" : "";
+
                 tr.innerHTML = `
                     <td data-label="Alliance Rank">
                         <input type="number" class="alliance-input" 
-                               value="${team.allianceRank === 999 ? '' : team.allianceRank}" 
+                               value="${team.allianceRank === 999 || team.allianceRank === '--' ? '' : team.allianceRank}" 
                                placeholder="--" 
                                onchange="updateAllianceRank('${team.teamNumber}', this.value)"
-                               inputmode="numeric">
+                               inputmode="numeric" ${inputsDisabledAttr}>
                     </td>
                     <td data-label="Team #"><b>${team.teamNumber}</b></td>
                     <td data-label="Team Name">${team.teamName}</td>
@@ -743,23 +1103,21 @@
                     <td data-label="Avg Points">${team.avgScore}</td>
                     <td data-label="Endgame Pts">${team.endgame}</td>
                     <td class="notes-row">
-                        <button class="notes-toggle-btn" onclick="toggleNotesDrawer('${team.teamNumber}')">
-                            <svg viewBox="0 0 24 24">
-                                <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
-                            </svg>
-                            View/Edit Notes
-                        </button>
+                        <div style="display:flex; gap: 6px;">
+                            <button class="notes-toggle-btn" onclick="toggleNotesDrawer('${team.teamNumber}')">
+                                <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+                                Details / Notes
+                            </button>
+                        </div>
                         <div class="notes-container" id="notes-${team.teamNumber}">
                             ${summaryHtml}
-                            <textarea class="notes-textarea" id="textarea-${team.teamNumber}" placeholder="Type strategy or raw pit scouting notes here...">${team.teamNotes}</textarea>
+                            <textarea class="notes-textarea" id="textarea-${team.teamNumber}" placeholder="Type strategy notes..." ${inputsDisabledAttr}>${team.teamNotes}</textarea>
                             <div class="notes-button-group">
-                                <button class="notes-ai-btn" onclick="generateAiSummary('${team.teamNumber}', this)">
-                                    <svg viewBox="0 0 24 24">
-                                        <path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7zm2.85 11.1l-.85.6V16h-4v-2.3l-.85-.6A4.997 4.997 0 0 1 7 9c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.63-.8 3.16-2.15 4.1z"/>
-                                    </svg>
-                                    AI Summarize
-                                </button>
-                                <button class="notes-save-btn" onclick="saveTeamNotes('${team.teamNumber}', document.getElementById('textarea-${team.teamNumber}'))">Save Notes</button>
+                                ${ !team.isCareerCompiledMock ? `
+                                    <button class="profile-delete-btn" onclick="deleteTeamProfileData('${team.teamNumber}')">Delete Entry</button>
+                                    <button class="notes-ai-btn" onclick="generateAiSummary('${team.teamNumber}', this)" ${inputsDisabledAttr}>AI Summarize</button>
+                                    <button class="notes-save-btn" onclick="saveTeamNotes('${team.teamNumber}', document.getElementById('textarea-${team.teamNumber}'))" ${inputsDisabledAttr}>Save Notes</button>
+                                ` : `<span style="font-size:0.75rem; color:var(--text-muted); padding:8px;">Notes display aggregated summary tracking mode. Check individual event profiles to modify source values.</span>` }
                             </div>
                             <div class="notes-clear"></div>
                         </div>
@@ -769,6 +1127,9 @@
                 rowVisibilityObserver.observe(tr);
             });
         }
+
+        // Initialize App Launcher Pipeline Sequence
+        initializeScoutingEnvironment();
     </script>
 </body>
 </html>
