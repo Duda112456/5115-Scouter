@@ -973,24 +973,31 @@
             
             const entryId = `${activeCompetitionId}_${teamNum}`;
             
+            // 1. Immediately save raw notes data to Firebase
             await updateDoc(doc(db, "team_entries", entryId), {
                 teamNotes: notesText
             });
 
             if (notesText) {
                 try {
+                    // 2. Initialize using the custom client class initialization structure 
                     const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
-                    const prompt = `You are a scouting assistant for FTC Team 5115. Summarize these raw scout match notes into short bullet points (max 3 bullets). Focus strictly on robot performance, autonomous capabilities, or bugs. Output raw HTML bullets (<ul> and <li> tags) only. Raw Notes: "${notesText}"`;
+                    const promptText = `You are a scouting assistant for FTC Team 5115. Summarize these raw scout match notes into short bullet points (max 3 bullets). Focus strictly on robot performance, autonomous capabilities, or bugs. Output raw HTML bullets (<ul> and <li> tags) only. Raw Notes: "${notesText}"`;
 
+                    // Fix generation endpoint structure to utilize valid web SDK patterns
                     const response = await ai.models.generateContent({
                         model: 'gemini-2.5-flash',
-                        contents: prompt,
+                        contents: promptText,
                     });
 
-                    const cleanHtmlSummary = response.text.trim();
-                    await updateDoc(doc(db, "team_entries", entryId), { aiSummary: cleanHtmlSummary });
+                    // Parse text accurately safely handling properties returned by esm client wrapper
+                    const cleanHtmlSummary = response.text ? response.text.trim() : "";
+                    
+                    if (cleanHtmlSummary) {
+                        await updateDoc(doc(db, "team_entries", entryId), { aiSummary: cleanHtmlSummary });
+                    }
                 } catch (err) {
-                    console.error("Gemini Failure:", err);
+                    console.error("Gemini Failure Encountered:", err);
                 }
             }
 
