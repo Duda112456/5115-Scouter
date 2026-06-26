@@ -103,11 +103,12 @@
         .app-view.active-view { display: block; }
 
         /* Form Layout */
-        form, .upload-container { 
+        form, .upload-container, .strategy-box { 
             background: var(--bg-card); 
             padding: 20px; 
             border-radius: 16px; 
             border: 1px solid var(--border-color); 
+            margin-bottom: 20px;
         }
         .form-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
         .form-group { display: flex; flex-direction: column; }
@@ -412,7 +413,7 @@
             font-style: italic;
         }
 
-        /* Floating Pill Navbar with Sliding Slider Animation Track (Accommodates 3 tabs) */
+        /* Floating Pill Navbar with Sliding Slider Animation Track */
         .sketch-navbar-container {
             position: fixed;
             bottom: 25px;
@@ -436,13 +437,13 @@
             overflow: hidden;
         }
 
-        /* Animated sliding tab indicator bubble backdrop resized for 1/3 splits */
+        /* Animated sliding tab indicator bubble backdrop resized for 1/4 splits */
         .nav-slider-bubble {
             position: absolute;
             top: 4px;
             left: 4px;
             height: calc(100% - 8px);
-            width: calc(33.333% - 5.33px);
+            width: calc(25% - 6px);
             background-color: var(--primary);
             border-radius: 35px;
             transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
@@ -453,15 +454,15 @@
             background: transparent;
             border: none;
             color: var(--text-muted);
-            padding: 12px 18px;
+            padding: 12px 14px;
             border-radius: 30px;
             cursor: pointer;
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             font-weight: 700;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
+            gap: 4px;
             position: relative;
             z-index: 2; 
             transition: color 0.25s ease;
@@ -471,14 +472,33 @@
         }
 
         .nav-pill-btn svg {
-            width: 16px;
-            height: 16px;
+            width: 14px;
+            height: 14px;
             fill: currentColor;
             display: block;
             flex-shrink: 0;
         }
 
         .nav-pill-btn.active-tab { color: #ffffff; }
+
+        /* Alliance Selection Layout UI Elements */
+        .alliance-rank-badge {
+            background: var(--primary);
+            color: #fff;
+            font-weight: bold;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+        }
+        .analysis-justification-card {
+            background: rgba(255, 115, 0, 0.04);
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 8px;
+            font-size: 0.88rem;
+            border-left: 2px solid var(--primary);
+            color: var(--text-main);
+        }
 
         /* Desktop View Adaptation Settings */
         @media (min-width: 992px) {
@@ -487,8 +507,8 @@
             button { width: auto; padding: 12px 30px; align-self: end; }
             .controls { flex-direction: row; align-items: center; }
             .controls select { width: auto; min-width: 250px; }
-            .nav-pill-btn { padding: 12px 24px; font-size: 0.9rem; gap: 8px; }
-            .nav-pill-btn svg { width: 18px; height: 18px; }
+            .nav-pill-btn { padding: 12px 22px; font-size: 0.88rem; gap: 6px; }
+            .nav-pill-btn svg { width: 16px; height: 16px; }
             
             table { 
                 display: table; 
@@ -644,6 +664,35 @@
         </div>
     </div>
 
+    <div id="aiAllianceView" class="app-view">
+        <div class="strategy-box">
+            <h2>Alliance Selection Matrix Modeler</h2>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 12px;">
+                Define specific tactical strengths or complementary bot traits needed for your playoff bracket. The Gemini core engine evaluates active stats alongside team notes to generate an optimization ranking map.
+            </p>
+            <div class="form-group">
+                <label for="allianceCriteriaInput">Tactical Alliance Match Criteria Requirements:</label>
+                <textarea id="allianceCriteriaInput" placeholder="e.g., We need a consistent complementary partner with a high Teleop OPR and dependable Endgame hanging points. Prioritize bots noted for strong defensive driving frames and quick autonomous lane tracking over high raw scores." style="height: 100px; margin-bottom: 10px;"></textarea>
+            </div>
+            <button id="generateAllianceBtn" class="btn-success" onclick="generateAIAlliancePickList()">Generate AI Alliance Rankings</button>
+        </div>
+
+        <div id="allianceListOutputStatus" class="scan-status-log" style="margin-bottom: 15px;"></div>
+
+        <table id="alliancePickTable" style="display: none;">
+            <thead>
+                <tr>
+                    <th style="width: 80px;">Pick Priority</th>
+                    <th style="width: 90px;">Team #</th>
+                    <th>Team Identity Context</th>
+                    <th>Calculated Match Breakdown</th>
+                </tr>
+            </thead>
+            <tbody id="alliancePickTableBody">
+            </tbody>
+        </table>
+    </div>
+
     <div class="sketch-navbar-container">
         <div class="sketch-navbar-pill">
             <div class="nav-slider-bubble" id="navBubble"></div>
@@ -658,7 +707,11 @@
             </button>
             <button class="nav-pill-btn" onclick="switchView('aiScanView', this, 2)">
                 <svg viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
-                AI Paper Scan
+                Paper Scan
+            </button>
+            <button class="nav-pill-btn" onclick="switchView('aiAllianceView', this, 3)">
+                <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+                Alliance Pick
             </button>
         </div>
     </div>
@@ -666,7 +719,8 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, doc, setDoc, onSnapshot, updateDoc, getDocs, getDoc, deleteDoc, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        import { GoogleGenAI } from "https://esm.run/@google/genai";
+        // Retaining client package distribution path matching your current API key format
+        import { GoogleGenAI } from "https://esm.run/@google/genai-web";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAcPbzSt-iY8RVsYdZpvIfAAS86CwSYa5Q",
@@ -697,9 +751,10 @@
         let activeViewId = 'rankingsView';
         let bannerQueue = [];
         let bannerIsRunning = false;
-        let localCapturedBase64Image = null; // Memory allocation reference holder for Gemini vision data streams
+        let localCapturedBase64Image = null;
 
-        const GEMINI_API_KEY = "AQ.Ab8RN6Ijygst1gJWXfEkTnL5XdRMdEdwR2xlreF2Sm-npBWemw";
+        // Using your current configuration parameters
+        const GEMINI_API_KEY = "AIzaSyAcPbzSt-iY8RVsYdZpvIfAAS86CwSYa5Q";
 
         const rowVisibilityObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
@@ -845,6 +900,9 @@
             activeCompetitionId = selectedCompId;
             updateCompDisplayState();
             renderTable();
+            // Clear current selection map tables to keep dashboard accurate
+            document.getElementById('alliancePickTable').style.display = "none";
+            document.getElementById('allianceListOutputStatus').innerText = "";
         }
 
         window.archiveCurrentCompetition = async function() {
@@ -854,7 +912,7 @@
                 alert("This competition profile is already archived!");
                 return;
             }
-            if (confirm(`Are you sure you want to archive "${comp.name}"? This freezes performance data edits from this tournament while preserving career calculations.`)) {
+            if (confirm(`Are you sure you want to archive "${comp.name}"? This freezes performance data edits while preserving career calculations.`)) {
                 await updateDoc(doc(db, "competitions", activeCompetitionId), { isArchived: true });
                 comp.isArchived = true;
                 repopulateCompetitionDropdownSelector();
@@ -885,17 +943,14 @@
                 alert("No tournament selected to drop.");
                 return;
             }
-
-            const pinAttempt = prompt(`⚠️ CRITICAL ACCESS: You are attempting to completely erase the competition profile: "${comp.name}".\n\nThis completely wipes the event configuration and all associated team scouter metrics permanently from Firestore.\n\nEnter the 4-digit master delete code to proceed:`);
-            
+            const pinAttempt = prompt(`⚠️ CRITICAL ACCESS: You are attempting to completely erase the competition profile: "${comp.name}".\n\nEnter the 4-digit master delete code to proceed:`);
             if (pinAttempt === null) return; 
-            
             if (pinAttempt.trim() !== "4994") {
-                alert("❌ ACCESS DENIED: Invalid 4-digit authentication signature code match configuration.");
+                alert("❌ ACCESS DENIED: Invalid 4-digit authentication signature code.");
                 return;
             }
 
-            if (confirm(`Final warning: Are you completely certain you want to purge all tournament references and telemetry entries for "${comp.name}"?`)) {
+            if (confirm(`Final warning: Are you completely certain you want to purge all records for "${comp.name}"?`)) {
                 try {
                     const q = query(entriesCollection, where("competitionId", "==", activeCompetitionId));
                     const entrySnap = await getDocs(q);
@@ -906,10 +961,10 @@
                     await Promise.all(deletePromises);
 
                     await deleteDoc(doc(db, "competitions", activeCompetitionId));
-                    alert("🗑️ Competition and corresponding entries successfully purged from the system registry.");
+                    alert("🗑️ Competition and corresponding entries successfully purged.");
                     await initializeScoutingEnvironment();
                 } catch(err) {
-                    console.error("purging exception log pipeline err: ", err);
+                    console.error(err);
                     alert("An error occurred trying to delete the database records.");
                 }
             }
@@ -929,7 +984,6 @@
             } else {
                 rankSelectOption.style.display = 'block';
             }
-
             renderTable();
         }
 
@@ -955,7 +1009,6 @@
             document.getElementById(viewId).classList.add('active-view');
             clickedButton.classList.add('active-tab');
             
-            // Adjust tracker translation based on 3 active tabs (100% * index)
             const bubbleOffset = indexPosition * 100;
             document.getElementById('navBubble').style.transform = `translateX(${bubbleOffset}%)`;
             window.scrollTo(0, 0);
@@ -964,18 +1017,17 @@
         window.deleteTeamProfileData = async function(teamNum) {
             const targetComp = competitionsMap.get(activeCompetitionId);
             if (targetComp && targetComp.isArchived) {
-                alert("Cannot modify items. This competition environment context is locked/archived.");
+                alert("Cannot modify items. This competition context is locked.");
                 return;
             }
 
-            if (confirm(`🚨 DANGER ZONE: Are you sure you want to completely delete Team #${teamNum} entry metrics for the current competition event context?`)) {
+            if (confirm(`🚨 DANGER ZONE: Are you sure you want to completely delete Team #${teamNum} entry metrics?`)) {
                 try {
                     const entryId = `${activeCompetitionId}_${teamNum}`;
                     await deleteDoc(doc(db, "team_entries", entryId));
-                    alert(`Team #${teamNum} completely removed from current entry charts.`);
+                    alert(`Team #${teamNum} removed.`);
                 } catch (e) {
                     console.error(e);
-                    alert("Profile removal exception error standard logs.");
                 }
             }
         }
@@ -985,7 +1037,7 @@
             const targetComp = competitionsMap.get(activeCompetitionId);
             
             if (targetComp && targetComp.isArchived) {
-                if (confirm(`The selected tracking context profile is archived. Do you want to establish a brand-new active Competition Profile now?`)) {
+                if (confirm(`The selected tracking context profile is archived. Create a new active Profile?`)) {
                     await createNewCompetitionPrompt();
                     if (competitionsMap.get(activeCompetitionId).isArchived) return;
                 } else {
@@ -1024,7 +1076,7 @@
         window.updateAllianceRank = async function(teamNum, newRank) {
             const targetComp = competitionsMap.get(activeCompetitionId);
             if (targetComp && targetComp.isArchived) {
-                alert("Action blocked: active timeline state frozen.");
+                alert("Action blocked: timeline frozen.");
                 return;
             }
             const rankVal = parseInt(newRank);
@@ -1042,21 +1094,15 @@
             button.disabled = true;
             
             const entryId = `${activeCompetitionId}_${teamNum}`;
-            
-            await updateDoc(doc(db, "team_entries", entryId), {
-                teamNotes: notesText
-            });
+            await updateDoc(doc(db, "team_entries", entryId), { teamNotes: notesText });
 
             if (notesText) {
                 try {
                     const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
-                    const prompt = `You are a scouting assistant for FTC Team 5115. Summarize these raw scout match notes into short bullet points (max 3 bullets). Focus strictly on robot performance, autonomous capabilities, or bugs. Output raw HTML bullets (<ul> and <li> tags) only. Raw Notes: "${notesText}"`;
+                    const model = ai.getGenerativeModel({ model: "gemini-2.5-flash" });
+                    const prompt = `You are a scouting assistant for FTC Team 5115. Summarize these raw notes into short bullet points (max 3 bullets). Focus strictly on robot performance, autonomous capabilities, or bugs. Output raw HTML bullets (<ul> and <li> tags) only. Notes: "${notesText}"`;
 
-                    const response = await ai.models.generateContent({
-                        model: 'gemini-2.5-flash',
-                        contents: prompt,
-                    });
-
+                    const response = await model.generateContent([prompt]);
                     const cleanHtmlSummary = response.text.trim();
                     await updateDoc(doc(db, "team_entries", entryId), { aiSummary: cleanHtmlSummary });
                 } catch (err) {
@@ -1105,7 +1151,7 @@
             }, 10000);
         }
 
-        /* ------------------ AI IMAGE VISION SCANNER ENGINE ------------------ */
+        /* ------------------ FIXED AI IMAGE VISION SCANNER ENGINE ------------------ */
         window.handleImageSelection = function(inputEl) {
             const file = inputEl.files[0];
             if (!file) return;
@@ -1114,7 +1160,7 @@
             const preview = document.getElementById('imagePreviewFrame');
             const runBtn = document.getElementById('processScanBtn');
 
-            status.innerText = "Processing image asset selection pipeline...";
+            status.innerText = "Processing image selection...";
             
             const reader = new FileReader();
             reader.onload = function(e) {
@@ -1122,10 +1168,8 @@
                 preview.src = fullDataUrl;
                 preview.style.display = "block";
                 
-                // Extract clean raw Base64 data block stripping out data:image header prefix
                 localCapturedBase64Image = fullDataUrl.split(',')[1];
-                
-                status.innerText = "Image source prepared. Confirm execution via the action button below.";
+                status.innerText = "Image prepared. Click below to scan.";
                 runBtn.style.display = "block";
             };
             reader.readAsDataURL(file);
@@ -1133,13 +1177,13 @@
 
         window.executeAIVisionParsing = async function() {
             if (!localCapturedBase64Image) {
-                alert("Please drop or snapshot an input asset baseline before parsing.");
+                alert("Please select or snap an image baseline before parsing.");
                 return;
             }
 
             const targetCompName = prompt("Enter a title for this new scanned competition event profile context:", "Scanned Matrix Tournament");
             if (!targetCompName || !targetCompName.trim()) {
-                alert("Event creation aborted. A valid context label is mandatory.");
+                alert("Event creation aborted.");
                 return;
             }
 
@@ -1148,10 +1192,11 @@
 
             runBtn.disabled = true;
             runBtn.innerText = "AI System Processing...";
-            status.innerHTML = "Initializing Gemini Multimodal Core Engine... <br>Analyzing telemetry columns and handwriting configurations.";
+            status.innerHTML = "Initializing Gemini Multimodal Engine... <br>Analyzing table data structures.";
 
             try {
                 const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+                const model = ai.getGenerativeModel({ model: "gemini-2.5-flash" });
                 
                 const promptString = `You are an expert robotics scouting assistant for FRC/FTC Team 5115. Look at this picture of a team ranking or matrix sheet. 
                 Extract every team listed in the photo. Look closely for columns representing data items like Team Number, Team Name, Auto OPR, Teleop OPR, Avg Points, or Endgame Points.
@@ -1171,9 +1216,7 @@
                   }
                 ]`;
 
-                const response = await ai.models.generateContent({
-                  model: 'gemini-2.5-flash',
-                  contents: [
+                const response = await model.generateContent([
                     {
                       inlineData: {
                         mimeType: "image/jpeg",
@@ -1181,14 +1224,12 @@
                       }
                     },
                     promptString
-                  ]
-                });
+                ]);
 
                 const rawText = response.text.trim();
                 let cleanParsedArray = [];
                 
                 try {
-                    // Safety check to slice away accidental text structures if the model broke JSON compliance constraints
                     const startIndex = rawText.indexOf('[');
                     const endIndex = rawText.lastIndexOf(']') + 1;
                     if(startIndex !== -1 && endIndex !== -1) {
@@ -1205,7 +1246,6 @@
                     throw new Error("Zero team entities were mapped out from the input sheet.");
                 }
 
-                // Step A: Establish the new Tournament Profile Document
                 const generatedCompId = "comp_" + Date.now();
                 const newCompConfig = {
                     name: targetCompName.trim(),
@@ -1217,7 +1257,6 @@
                 competitionsMap.set(generatedCompId, newCompConfig);
                 activeCompetitionId = generatedCompId;
 
-                // Step B: Loop data extractions directly into Firestore entries
                 for (const team of cleanParsedArray) {
                     const cleanNum = String(team.teamNumber || "").trim();
                     if (!cleanNum) continue;
@@ -1247,14 +1286,12 @@
                     await setDoc(doc(db, "global_team_profiles", cleanNum), globalProfileData, { merge: true });
                 }
 
-                // Reset Upload UI metrics
-                status.innerText = `Success! Established new tracking context and loaded ${cleanParsedArray.length} team telemetry metrics blocks.`;
+                status.innerText = `Success! Created new tournament and loaded ${cleanParsedArray.length} teams.`;
                 document.getElementById('nativeCameraInput').value = "";
                 document.getElementById('imagePreviewFrame').style.display = "none";
                 localCapturedBase64Image = null;
                 runBtn.style.display = "none";
 
-                // Repopulate tracking metrics context components and route back to main ranking layout view
                 repopulateCompetitionDropdownSelector();
                 updateCompDisplayState();
                 
@@ -1264,10 +1301,117 @@
 
             } catch (err) {
                 console.error("AI Scanner Failure:", err);
-                status.innerHTML = `<span style="color:var(--danger)">Parsing Failure: ${err.message || "Unknown connectivity matrix timeout."}</span>`;
+                status.innerHTML = `<span style="color:var(--danger)">Parsing Failure: ${err.message || "Unknown error."}</span>`;
             } finally {
                 runBtn.disabled = false;
                 runBtn.innerText = "Run AI Analysis";
+            }
+        }
+
+        /* ------------------ NEW AI ALLIANCE SELECTION RANKER MATRIX ------------------ */
+        window.generateAIAlliancePickList = async function() {
+            const criteria = document.getElementById('allianceCriteriaInput').value.trim();
+            if (!criteria) {
+                alert("Please declare your target alliance match traits or strategy rules first.");
+                return;
+            }
+
+            const currentScopeData = generateCompiledDisplayArray();
+            if (currentScopeData.length === 0) {
+                alert("No team metrics tracking dataset is populated under this event scope context.");
+                return;
+            }
+
+            const statusLog = document.getElementById('allianceListOutputStatus');
+            const runBtn = document.getElementById('generateAllianceBtn');
+            const outputTable = document.getElementById('alliancePickTable');
+            const outputBody = document.getElementById('alliancePickTableBody');
+
+            runBtn.disabled = true;
+            runBtn.innerText = "AI Generation Active...";
+            statusLog.innerHTML = "Packaging scouting matrix configurations... <br>Querying Gemini decision engine model.";
+            outputTable.style.display = "none";
+
+            try {
+                const datasetContextString = currentScopeData.map(t => {
+                    return `Team #${t.teamNumber} (${t.teamName}) -> Auto OPR: ${t.autoOpr}, Teleop OPR: ${t.teleopOpr}, Avg Score: ${t.avgScore}, Endgame Points: ${t.endgame}, Notes Logged: "${t.teamNotes || 'None'}".`;
+                }).join("\n");
+
+                const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+                const model = ai.getGenerativeModel({ model: "gemini-2.5-flash" });
+
+                const strategicPrompt = `You are an elite robotics strategy advisor modeling strategic playbook setups for FTC Team 5115.
+                We are currently modeling alliance picking priorities.
+                
+                Here are our preferred selection traits and team goals:
+                "${criteria}"
+                
+                Here is the verified dataset tracking matrix for all potential alliance options on the field:
+                ${datasetContextString}
+                
+                Analyze every team against our target criteria. Cross-reference their statistical performance metrics with human pit scouting data logs. Rank all teams from best target selection to worst match.
+                
+                CRITICAL DATA BOUNDARY: Your response must strictly contain a raw valid JSON array. Do not wrap it in markdown backticks or block wrappers, do not include '\\\`\\\`\\`json' code tags, and output zero conversational introductory or trailing sentences.
+                
+                Structure the output array objects exactly like this JSON schema prototype:
+                [
+                  {
+                    "teamNumber": "5115",
+                    "teamName": "RoboKnights",
+                    "justification": "Ranked #1 choice due to exceptional teleop clearance OPR and driver notes describing zero tipping frame errors, aligning directly with our priority."
+                  }
+                ]`;
+
+                const response = await model.generateContent([strategicPrompt]);
+                const responseText = response.text.trim();
+
+                let structuredPriorityArray = [];
+                try {
+                    const startIdx = responseText.indexOf('[');
+                    const endIdx = responseText.lastIndexOf(']') + 1;
+                    if (startIdx !== -1 && endIdx !== -1) {
+                        structuredPriorityArray = JSON.parse(responseText.substring(startIdx, endIdx));
+                    } else {
+                        throw new Error("Structured JSON borders were corrupted.");
+                    }
+                } catch(parseErr) {
+                    console.error("Raw modeling data trace failure: ", responseText);
+                    throw new Error("Could not map text layout block output directly into matching JSON arrays.");
+                }
+
+                outputBody.innerHTML = "";
+                let alignmentCounter = 1;
+
+                structuredPriorityArray.forEach((pick) => {
+                    const matchingRawStats = currentScopeData.find(s => String(s.teamNumber) === String(pick.teamNumber)) || {};
+                    const tr = document.createElement('tr');
+                    
+                    tr.innerHTML = `
+                        <td data-label="Pick Priority"><span class="alliance-rank-badge">#${alignmentCounter}</span></td>
+                        <td data-label="Team #"><b>${pick.teamNumber}</b></td>
+                        <td data-label="Team Identity Context">
+                            <strong>${pick.teamName || matchingRawStats.teamName || 'Unknown'}</strong><br>
+                            <span style="font-size:0.8rem; color:var(--text-muted)">
+                                OPR: ${(matchingRawStats.overallOpr || 0)} | Auto: ${(matchingRawStats.autoOpr || 0)} | Endgame: ${(matchingRawStats.endgame || 0)}
+                            </span>
+                        </td>
+                        <td data-label="Calculated Match Breakdown">
+                            <div class="analysis-justification-card">${pick.justification}</div>
+                        </td>
+                    `;
+                    outputBody.appendChild(tr);
+                    alignmentCounter++;
+                });
+
+                statusLog.innerText = `Optimization array mapped completely. Evaluated ${structuredPriorityArray.length} targets.`;
+                outputTable.style.display = "table";
+
+            } catch(e) {
+                console.error(e);
+                statusLog.innerHTML = `<span style="color:var(--danger)">Modeling matrix exception failure: ${e.message || "Timeout."}</span>`;
+            } finally {
+                runBtn.disabled = false;
+                runBtn.innerText = "Generate AI Alliance Rankings";
             }
         }
         /* -------------------------------------------------------------------- */
@@ -1291,7 +1435,7 @@
                             else if (Number(freshData.teleopOpr) !== Number(oldData.teleopOpr || 0)) matchingCategory = "Teleop OPR";
                             else if (Number(freshData.avgScore) !== Number(oldData.avgScore || 0)) matchingCategory = "Avg Points";
                             else if (Number(freshData.endgame) !== Number(oldData.endgame || 0)) matchingCategory = "Endgame Points";
-                            else if (freshData.allianceRank !== oldData.allianceRank) matchingCategory = "Team Rank Placement Profile Update";
+                            else if (freshData.allianceRank !== oldData.allianceRank) matchingCategory = "Team Rank Update";
 
                             changesToProcess.push({
                                 teamNumber: freshData.teamNumber,
