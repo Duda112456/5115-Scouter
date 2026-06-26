@@ -22,7 +22,7 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
             background-color: var(--bg-dark); 
             color: var(--text-main); 
-            padding: 55px 15px 105px 15px; 
+            padding: 55px 15px 125px 15px; /* Added extra bottom padding so cards never hide behind navbar */
         }
 
         h1 { 
@@ -413,15 +413,15 @@
             font-style: italic;
         }
 
-        /* Floating Pill Navbar with Sliding Slider Animation Track */
+        /* ---------------- FIXED BOTTOM NAVBAR CONTAINER ---------------- */
         .sketch-navbar-container {
             position: fixed;
-            bottom: 25px;
+            bottom: 20px;
             left: 0;
             width: 100%;
             display: flex;
             justify-content: center;
-            z-index: 1000;
+            z-index: 9999; /* Higher z-index to stay above content views */
             pointer-events: none;
         }
 
@@ -432,12 +432,14 @@
             border-radius: 40px;
             display: flex;
             position: relative;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
             pointer-events: auto;
-            overflow: hidden;
+            width: 92%;
+            max-width: 600px;
+            justify-content: space-between;
         }
 
-        /* Animated sliding tab indicator bubble backdrop resized for 1/4 splits */
+        /* Fixed 4-split tab tracker alignment */
         .nav-slider-bubble {
             position: absolute;
             top: 4px;
@@ -446,7 +448,7 @@
             width: calc(25% - 6px);
             background-color: var(--primary);
             border-radius: 35px;
-            transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+            transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
             z-index: 1;
         }
 
@@ -454,26 +456,27 @@
             background: transparent;
             border: none;
             color: var(--text-muted);
-            padding: 12px 14px;
+            padding: 12px 6px;
             border-radius: 30px;
             cursor: pointer;
-            font-size: 0.82rem;
+            font-size: 0.78rem;
             font-weight: 700;
             display: inline-flex;
+            flex-direction: column; /* stacked layout on mobile prevents overflow */
             align-items: center;
             justify-content: center;
             gap: 4px;
             position: relative;
             z-index: 2; 
             transition: color 0.25s ease;
-            width: auto;
+            flex: 1;
             margin: 0;
             line-height: 1;
         }
 
         .nav-pill-btn svg {
-            width: 14px;
-            height: 14px;
+            width: 16px;
+            height: 16px;
             fill: currentColor;
             display: block;
             flex-shrink: 0;
@@ -502,12 +505,14 @@
 
         /* Desktop View Adaptation Settings */
         @media (min-width: 992px) {
-            body { padding: 60px 30px 105px 30px; max-width: 1350px; margin: 0 auto; }
+            body { padding: 60px 30px 115px 30px; max-width: 1350px; margin: 0 auto; }
             .form-grid { grid-template-columns: repeat(3, 1fr); }
             button { width: auto; padding: 12px 30px; align-self: end; }
             .controls { flex-direction: row; align-items: center; }
             .controls select { width: auto; min-width: 250px; }
-            .nav-pill-btn { padding: 12px 22px; font-size: 0.88rem; gap: 6px; }
+            
+            .sketch-navbar-pill { width: 100%; }
+            .nav-pill-btn { flex-direction: row; font-size: 0.88rem; padding: 12px 20px; gap: 6px; }
             .nav-pill-btn svg { width: 16px; height: 16px; }
             
             table { 
@@ -719,7 +724,6 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, doc, setDoc, onSnapshot, updateDoc, getDocs, getDoc, deleteDoc, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        // Retaining client package distribution path matching your current API key format
         import { GoogleGenAI } from "https://esm.run/@google/genai-web";
 
         const firebaseConfig = {
@@ -753,7 +757,6 @@
         let bannerIsRunning = false;
         let localCapturedBase64Image = null;
 
-        // Using your current configuration parameters
         const GEMINI_API_KEY = "AIzaSyAcPbzSt-iY8RVsYdZpvIfAAS86CwSYa5Q";
 
         const rowVisibilityObserver = new IntersectionObserver((entries) => {
@@ -900,7 +903,6 @@
             activeCompetitionId = selectedCompId;
             updateCompDisplayState();
             renderTable();
-            // Clear current selection map tables to keep dashboard accurate
             document.getElementById('alliancePickTable').style.display = "none";
             document.getElementById('allianceListOutputStatus').innerText = "";
         }
@@ -1151,7 +1153,6 @@
             }, 10000);
         }
 
-        /* ------------------ FIXED AI IMAGE VISION SCANNER ENGINE ------------------ */
         window.handleImageSelection = function(inputEl) {
             const file = inputEl.files[0];
             if (!file) return;
@@ -1308,7 +1309,6 @@
             }
         }
 
-        /* ------------------ NEW AI ALLIANCE SELECTION RANKER MATRIX ------------------ */
         window.generateAIAlliancePickList = async function() {
             const criteria = document.getElementById('allianceCriteriaInput').value.trim();
             if (!criteria) {
@@ -1414,7 +1414,6 @@
                 runBtn.innerText = "Generate AI Alliance Rankings";
             }
         }
-        /* -------------------------------------------------------------------- */
 
         let isInitialLoad = true;
         function startLiveDataSyncEngines() {
