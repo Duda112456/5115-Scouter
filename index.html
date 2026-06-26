@@ -348,12 +348,16 @@
             justify-content: flex-end;
             flex-wrap: wrap;
         }
-        .notes-save-btn {
+        .notes-close-btn {
+            background: #23163d;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
             padding: 8px 14px;
             font-size: 0.85rem;
             width: auto;
             margin-top: 0;
         }
+        .notes-close-btn:hover { background: #312054; }
         
         .profile-delete-btn {
             background: var(--danger);
@@ -443,7 +447,6 @@
             .controls { flex-direction: row; align-items: center; }
             .controls select { width: auto; min-width: 250px; }
             
-            /* Forces clean, even grid distribution across headers */
             table { 
                 display: table; 
                 width: 100%; 
@@ -460,7 +463,6 @@
             tr { display: table-row; background: none; margin-bottom: 0; border: none; }
             tr:hover { background-color: rgba(43, 28, 71, 0.3); }
             
-            /* Reset mobile layout layout constraints */
             th, td { 
                 display: table-cell; 
                 padding: 16px 12px; 
@@ -469,8 +471,7 @@
                 border-bottom: 1px solid var(--border-color); 
             }
             
-            /* Assign specific visual alignment properties where readable */
-            th:nth-child(3), td:nth-child(3) { text-align: left; } /* Team Name left-aligned */
+            th:nth-child(3), td:nth-child(3) { text-align: left; } 
             
             th { background-color: rgba(21, 13, 38, 0.6); color: var(--primary); font-weight: 700; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px; }
 
@@ -933,19 +934,20 @@
             });
         }
 
-        window.saveTeamNotesAndAutoSummarize = async function(teamNum, textareaElement) {
+        window.closeNotesAndAutoSummarize = async function(teamNum, textareaElement, closeButtonElement) {
             const notesText = textareaElement.value.trim();
-            const button = textareaElement.nextElementSibling;
             
-            button.innerText = "Saving & Summarizing...";
-            button.disabled = true;
+            closeButtonElement.innerText = "Saving & Summarizing...";
+            closeButtonElement.disabled = true;
             
             const entryId = `${activeCompetitionId}_${teamNum}`;
             
+            // 1. Immediately save the raw text entries
             await updateDoc(doc(db, "team_entries", entryId), {
                 teamNotes: notesText
             });
 
+            // 2. Automatically kick off AI summary engine if telemetry is provided
             if (notesText) {
                 try {
                     const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
@@ -963,9 +965,11 @@
                 }
             }
 
-            button.innerText = "Saved!";
-            button.disabled = false;
-            setTimeout(() => { button.innerText = "Save Notes"; }, 1500);
+            closeButtonElement.innerText = "Close Notes";
+            closeButtonElement.disabled = false;
+            
+            // 3. Hide the sliding container row element
+            toggleNotesDrawer(teamNum);
         }
 
         window.toggleNotesDrawer = function(teamNum) {
@@ -1143,6 +1147,9 @@
                     : '';
 
                 const inputsDisabledAttr = (isArchived || team.isCareerCompiledMock) ? "disabled" : "";
+                
+                // Sanitation engine configuration setup to clean notes strings
+                const cleanNotesString = (team.teamNotes !== undefined && team.teamNotes !== null) ? team.teamNotes : "";
 
                 tr.innerHTML = `
                     <td data-label="Team Rank">
@@ -1174,11 +1181,11 @@
                     <td class="drawer-fullwidth-cell" colspan="9">
                         <div class="notes-container" id="notes-${team.teamNumber}">
                             ${summaryHtml}
-                            <textarea class="notes-textarea" id="textarea-${team.teamNumber}" placeholder="Type strategy notes..." ${inputsDisabledAttr}>${team.teamNotes}</textarea>
+                            <textarea class="notes-textarea" id="textarea-${team.teamNumber}" placeholder="e.g., Fast cycle times, struggles with high chamber climbing..." ${inputsDisabledAttr}>${cleanNotesString}</textarea>
                             <div class="notes-button-group">
                                 ${ !team.isCareerCompiledMock ? `
                                     <button class="profile-delete-btn" onclick="deleteTeamProfileData('${team.teamNumber}')">Delete Entry</button>
-                                    <button class="notes-save-btn" onclick="saveTeamNotesAndAutoSummarize('${team.teamNumber}', document.getElementById('textarea-${team.teamNumber}'))" ${inputsDisabledAttr}>Save Notes</button>
+                                    <button class="notes-close-btn" id="closebtn-${team.teamNumber}" onclick="closeNotesAndAutoSummarize('${team.teamNumber}', document.getElementById('textarea-${team.teamNumber}'), this)" ${inputsDisabledAttr}>Close Notes</button>
                                 ` : `<span style="font-size:0.75rem; color:var(--text-muted); padding:8px;">Notes display aggregated summary tracking mode. Check individual event profiles to modify source values.</span>` }
                             </div>
                             <div class="notes-clear"></div>
