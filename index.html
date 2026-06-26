@@ -22,7 +22,7 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
             background-color: var(--bg-dark); 
             color: var(--text-main); 
-            padding: 55px 15px 125px 15px; 
+            padding: 20px 15px 120px 15px; 
         }
 
         h1 { 
@@ -36,31 +36,26 @@
         }
         h2 { font-size: 1.2rem; margin-bottom: 15px; color: var(--text-main); text-transform: uppercase; letter-spacing: 0.5px;}
 
-        /* Top Bar Info - REBUILT TO FIX CROP AND SPLIT TEXT */
+        /* Top Bar Info */
         .comp-status-bar {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
-            padding: 16px;
+            padding: 12px 16px;
             border-radius: 12px;
             margin-bottom: 20px;
             display: flex;
             flex-direction: column;
-            gap: 14px;
+            gap: 10px;
             align-items: center;
             justify-content: space-between;
         }
-        @media (min-width: 992px) {
+        @media (min-width: 768px) {
             .comp-status-bar { flex-direction: row; }
         }
 
         .active-comp-info {
-            font-size: 1rem;
-            line-height: 1.5;
+            font-size: 0.95rem;
             color: var(--text-muted);
-            text-align: center;
-        }
-        @media (min-width: 992px) {
-            .active-comp-info { text-align: left; }
         }
         .active-comp-info strong {
             color: var(--primary);
@@ -69,7 +64,7 @@
             background: rgba(220, 53, 69, 0.2);
             color: var(--danger);
             border: 1px solid var(--danger);
-            padding: 2px 8px;
+            padding: 2px 6px;
             border-radius: 4px;
             font-size: 0.75rem;
             font-weight: bold;
@@ -77,17 +72,11 @@
             text-transform: uppercase;
         }
 
-        /* Control Settings Layout Container */
         .status-actions-wrapper {
             display: flex; 
-            gap: 10px; 
+            gap: 8px; 
             flex-wrap: wrap; 
             align-items: center;
-            justify-content: center;
-            width: 100%;
-        }
-        @media (min-width: 992px) {
-            .status-actions-wrapper { width: auto; justify-content: flex-end; }
         }
 
         /* Toggle Button Group Styles */
@@ -95,77 +84,58 @@
             display: inline-flex;
             background: var(--bg-dark);
             border: 1px solid var(--border-color);
-            padding: 4px;
-            border-radius: 30px;
-            height: 40px;
-            align-items: center;
+            padding: 2px;
+            border-radius: 20px;
         }
         .toggle-btn {
             background: transparent;
             border: none;
             color: var(--text-muted);
-            padding: 0 16px;
-            height: 100%;
-            font-size: 0.85rem;
+            padding: 6px 14px;
+            font-size: 0.8rem;
             font-weight: bold;
-            border-radius: 20px;
+            border-radius: 15px;
             cursor: pointer;
             width: auto;
             margin-top: 0;
             transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
         }
         .toggle-btn.active {
             background: var(--primary);
             color: #fff;
         }
 
-        /* Form Controls - HEIGHT AND LINE-HEIGHT CORRECTIONS */
+        /* Form Controls */
         input[type="text"], input[type="number"], select, textarea { 
             background-color: var(--bg-dark);
             color: var(--text-main);
-            padding: 0 12px; 
-            height: 40px;
-            line-height: 38px;
+            padding: 10px 12px; 
             border: 1px solid var(--border-color); 
-            border-radius: 10px; 
-            font-size: 15px; 
-            transition: all 0.2s ease;
+            border-radius: 8px; 
+            font-size: 14px; 
+            transition: border-color 0.2s;
             font-family: inherit;
         }
-        textarea { height: auto; line-height: 1.4; padding: 12px; }
-        
-        input:focus, select:focus, textarea:focus { 
-            border-color: var(--primary); 
-            outline: none; 
-            box-shadow: 0 0 0 3px rgba(255, 115, 0, 0.25); 
-        }
+        input:focus, select:focus, textarea:focus { border-color: var(--primary); outline: none; }
 
         #compSelector {
-            min-width: 180px;
-            height: 40px;
-            background-color: var(--bg-dark);
-            color: var(--text-main);
-            border: 1px solid var(--border-color);
+            padding: 6px 10px;
+            font-size: 0.85rem;
+            border-radius: 6px;
         }
         
         button { 
             background: var(--primary); 
             color: #fff; 
-            padding: 0 20px; 
-            height: 40px;
+            padding: 10px 16px; 
             border: none; 
-            border-radius: 10px; 
+            border-radius: 8px; 
             cursor: pointer; 
-            font-size: 15px; 
+            font-size: 14px; 
             font-weight: 700; 
-            margin-top: 0; 
+            margin-top: 5px; 
             width: 100%; 
             transition: background 0.2s; 
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
         }
         button:hover { background: var(--primary-hover); }
 
@@ -182,12 +152,11 @@
         .btn-danger { background: var(--danger); }
         .btn-danger:hover { background: #bd2130; }
 
-        /* Top Action Bar Operational Triggers */
         .action-trigger-btn {
             width: auto;
-            padding: 0 14px;
-            font-size: 0.85rem;
-            border-radius: 20px;
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            margin-top: 0;
         }
 
         /* Tab Visibility Control */
@@ -198,29 +167,28 @@
         form, .strategy-box { 
             background: var(--bg-card); 
             padding: 20px; 
-            border-radius: 16px; 
+            border-radius: 12px; 
             border: 1px solid var(--border-color); 
             margin-bottom: 20px;
         }
-        .form-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
+        .form-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
         .form-group { display: flex; flex-direction: column; }
-        label { margin-bottom: 6px; font-weight: 600; font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        label { margin-bottom: 4px; font-weight: 600; font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
 
         #teamForm button[type="submit"] {
-            margin-top: 10px;
-            height: 46px;
-            width: 100%;
+            margin-top: 15px;
+            padding: 12px;
         }
 
         /* Sorting Controls Box */
         .controls { 
-            margin-bottom: 20px; 
+            margin-bottom: 15px; 
             background: var(--bg-card); 
-            padding: 15px; 
-            border-radius: 16px; 
+            padding: 12px; 
+            border-radius: 12px; 
             display: flex; 
             flex-direction: column; 
-            gap: 10px; 
+            gap: 8px; 
             border: 1px solid var(--border-color);
         }
         .controls select { width: 100%; }
@@ -231,31 +199,30 @@
         
         tr { 
             background: var(--bg-card); 
-            margin-bottom: 15px; 
-            padding: 16px; 
-            border-radius: 16px; 
+            margin-bottom: 12px; 
+            padding: 12px; 
+            border-radius: 12px; 
             border: 1px solid var(--border-color); 
         }
         td { 
             display: flex; 
             justify-content: space-between; 
             align-items: center;
-            padding: 10px 0; 
+            padding: 8px 0; 
             border-bottom: 1px solid rgba(43, 28, 71, 0.4); 
-            font-size: 15px; 
+            font-size: 14px; 
         }
-        td::before { content: attr(data-label); font-weight: 600; color: var(--text-muted); font-size: 0.9rem; }
-        td[data-label="Team #"] { font-size: 1.35rem; color: var(--primary); }
+        td::before { content: attr(data-label); font-weight: 600; color: var(--text-muted); font-size: 0.85rem; }
+        td[data-label="Team #"] { font-size: 1.2rem; color: var(--primary); }
         
         .alliance-input { 
-            width: 70px; 
-            padding: 0;
-            height: 34px;
+            width: 55px; 
+            padding: 4px; 
             text-align: center; 
-            font-size: 15px; 
+            font-size: 14px; 
             font-weight: 700;
-            border-radius: 8px; 
-            border: 2px solid var(--primary); 
+            border-radius: 6px; 
+            border: 1px solid var(--primary); 
             background: var(--bg-dark);
             color: var(--primary);
         }
@@ -263,18 +230,18 @@
         /* Expanding Live Team Notes UI Block */
         .notes-column-cell {
             border-bottom: none;
-            padding-top: 10px;
+            padding-top: 8px;
             display: block;
         }
         .notes-toggle-btn {
             background: #23163d;
             color: var(--text-main);
-            height: 34px;
-            padding: 0 14px;
-            border-radius: 8px;
-            font-size: 0.85rem;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
             font-weight: 600;
             width: auto;
+            margin-top: 0;
             border: 1px solid var(--border-color);
         }
         
@@ -283,56 +250,55 @@
 
         .notes-container {
             display: none;
-            margin-top: -10px;
-            margin-bottom: 20px;
+            margin-top: -6px;
+            margin-bottom: 15px;
             background: var(--bg-card);
-            padding: 16px;
-            border-radius: 16px;
+            padding: 12px;
+            border-radius: 12px;
             border: 1px solid var(--primary);
         }
         .notes-container.open { display: block; }
         
-        /* AI Summary Display Box styling */
+        /* New AI Takeaway Styles */
         .ai-summary-display {
-            background: rgba(255, 115, 0, 0.07);
+            background: rgba(255, 115, 0, 0.08);
             border-left: 3px solid var(--primary);
-            padding: 10px 14px;
-            border-radius: 0 8px 8px 0;
-            margin-bottom: 12px;
-            font-size: 0.88rem;
+            padding: 8px 12px;
+            border-radius: 0 6px 6px 0;
+            margin-bottom: 10px;
+            font-size: 0.85rem;
             color: var(--text-main);
-            line-height: 1.4;
         }
         .ai-summary-display strong {
             color: var(--primary);
             display: block;
-            margin-bottom: 4px;
-            font-size: 0.8rem;
+            margin-bottom: 3px;
+            font-size: 0.75rem;
             text-transform: uppercase;
         }
 
         .notes-textarea {
             width: 100%;
-            height: 80px;
+            height: 70px;
             resize: none;
-            font-size: 0.9rem;
-            padding: 8px;
-            margin-bottom: 8px;
+            font-size: 0.85rem;
+            padding: 6px;
+            margin-bottom: 6px;
             background-color: var(--bg-dark);
         }
         .notes-button-group {
             display: flex;
-            gap: 8px;
+            gap: 6px;
             justify-content: flex-end;
         }
-        .notes-save-btn { height: 34px; padding: 0 14px; font-size: 0.85rem; width: auto; }
-        .notes-close-btn { background: #23163d; border: 1px solid var(--border-color); color: var(--text-main); height: 34px; padding: 0 14px; font-size: 0.85rem; width: auto; }
-        .profile-delete-btn { background: var(--danger); height: 34px; padding: 0 14px; font-size: 0.85rem; width: auto; margin-right: auto; }
+        .notes-save-btn { padding: 6px 12px; font-size: 0.8rem; width: auto; margin-top: 0; }
+        .notes-close-btn { background: #23163d; border: 1px solid var(--border-color); color: var(--text-main); padding: 6px 12px; font-size: 0.8rem; width: auto; margin-top: 0; }
+        .profile-delete-btn { background: var(--danger); padding: 6px 12px; font-size: 0.8rem; width: auto; margin-top: 0; margin-right: auto; }
 
         /* Bottom Pill Bar Alignment Selection */
         .sketch-navbar-container {
             position: fixed;
-            bottom: 20px;
+            bottom: 15px;
             left: 0;
             width: 100%;
             display: flex;
@@ -344,26 +310,26 @@
         .sketch-navbar-pill {
             background-color: var(--bg-card);
             border: 2px solid var(--primary);
-            padding: 4px;
-            border-radius: 40px;
+            padding: 3px;
+            border-radius: 30px;
             display: grid;
-            grid-template-columns: repeat(3, 1fr); 
+            grid-template-columns: repeat(3, 1fr); /* Upgraded from 2 to 3 for AI view */
             position: relative;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
             pointer-events: auto;
-            width: 92%;
-            max-width: 500px;
+            width: 90%;
+            max-width: 440px;
         }
 
         .nav-slider-bubble {
             position: absolute;
-            top: 4px;
-            left: 4px;
-            height: calc(100% - 8px);
-            width: calc(33.333% - 6px); 
+            top: 3px;
+            left: 3px;
+            height: calc(100% - 6px);
+            width: calc(33.333% - 4px); /* Adjusted width fraction to 1/3 */
             background-color: var(--primary);
-            border-radius: 35px;
-            transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 25px;
+            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 1;
         }
 
@@ -371,22 +337,21 @@
             background: transparent;
             border: none;
             color: var(--text-muted);
-            padding: 12px 2px;
-            border-radius: 30px;
+            padding: 10px 4px;
+            border-radius: 25px;
             cursor: pointer;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 700;
             display: flex;
             flex-direction: column; 
             align-items: center;
             justify-content: center;
-            gap: 4px;
+            gap: 2px;
             position: relative;
             z-index: 2; 
             transition: color 0.2s ease;
             width: 100%;
-            margin: 0;
-            height: auto;
+            margin-top: 0;
         }
 
         .nav-pill-btn svg {
@@ -398,72 +363,73 @@
 
         .nav-pill-btn.active-tab { color: #ffffff; }
 
+        /* AI Recommendations Specific Styling Elements */
         .alliance-rank-badge {
             background: var(--primary);
             color: #fff;
             font-weight: bold;
-            padding: 4px 10px;
-            border-radius: 8px;
+            padding: 2px 8px;
+            border-radius: 6px;
         }
         .analysis-justification-card {
             background: rgba(255, 115, 0, 0.04);
-            padding: 10px;
-            border-radius: 8px;
-            margin-top: 8px;
-            font-size: 0.88rem;
+            padding: 8px;
+            border-radius: 6px;
+            margin-top: 6px;
+            font-size: 0.85rem;
             border-left: 2px solid var(--primary);
             color: var(--text-main);
         }
 
         /* Desktop View Adaptation Settings */
-        @media (min-width: 992px) {
-            body { padding: 60px 30px 115px 30px; max-width: 1350px; margin: 0 auto; }
+        @media (min-width: 768px) {
+            body { padding: 30px 25px 100px 25px; max-width: 1200px; margin: 0 auto; }
             .form-grid { grid-template-columns: repeat(3, 1fr); }
-            #teamForm button[type="submit"] { width: auto; padding: 0 30px; align-self: end; }
+            #teamForm button[type="submit"] { width: auto; padding: 0 24px; align-self: end; }
             .controls { flex-direction: row; align-items: center; }
-            .controls select { width: auto; min-width: 250px; }
+            .controls select { width: auto; min-width: 200px; }
             
             .sketch-navbar-pill { width: 100%; }
-            .nav-pill-btn { flex-direction: row; font-size: 0.88rem; padding: 12px 10px; gap: 6px; }
+            .nav-pill-btn { flex-direction: row; font-size: 0.85rem; padding: 10px 12px; gap: 6px; }
             
             table { 
                 display: table; 
                 width: 100%; 
                 border-collapse: separate; 
                 background: var(--bg-card); 
-                border-radius: 16px; 
+                border-radius: 12px; 
                 overflow: hidden; 
                 border: 1px solid var(--border-color); 
             }
             thead { display: table-header-group; }
             tbody { display: table-row-group; }
             tr { display: table-row; }
-            tr:hover { background-color: rgba(43, 28, 71, 0.3); }
+            tr:hover { background-color: rgba(43, 28, 71, 0.2); }
             
             th, td { 
                 display: table-cell; 
-                padding: 16px 12px; 
+                padding: 12px; 
                 text-align: center; 
                 vertical-align: middle; 
                 border-bottom: 1px solid var(--border-color); 
             }
-            th { background-color: rgba(21, 13, 38, 0.6); color: var(--primary); font-weight: 700; text-transform: uppercase; font-size: 0.8rem; }
+            th { background-color: rgba(21, 13, 38, 0.4); color: var(--primary); font-weight: 700; text-transform: uppercase; font-size: 0.75rem; }
             td::before { content: ""; } 
 
             .notes-column-cell { display: table-cell; text-align: center; }
             .drawer-row-wrapper { display: table-row; }
-            .drawer-fullwidth-cell { padding: 0 20px 20px 20px; border-top: none; background: rgba(10, 5, 20, 0.15); }
-            .notes-container { margin-top: 0; margin-bottom: 0; background: var(--bg-dark); border-radius: 10px; border: 1px solid var(--border-color); }
+            .drawer-fullwidth-cell { padding: 0 15px 15px 15px; border-top: none; background: rgba(10, 5, 20, 0.1); }
+            .notes-container { margin-top: 0; margin-bottom: 0; background: var(--bg-dark); border-radius: 8px; border: 1px solid var(--border-color); }
         }
     </style>
 </head>
 <body>
 
-    <h1><span style="color:var(--text-main)">5115</span> Scouter</h1>
+    <h1>5115 Scouter</h1>
 
     <div class="comp-status-bar">
         <div class="active-comp-info">
-            Target Event: <strong id="currentCompDisplay">Syncing Database Context...</strong>
+            Active Competition Context: <strong id="currentCompDisplay">Syncing Database Context...</strong>
             <span id="frozenBadge" class="frozen-badge" style="display:none;">Archived/Frozen</span>
         </div>
         
@@ -510,7 +476,7 @@
                 </tr>
             </thead>
             <tbody id="teamsTableBody">
-                <tr><td colspan="9" style="text-align:center; padding:30px; color:var(--text-muted);">Syncing live active database rows...</td></tr>
+                <tr><td colspan="9" style="text-align:center; padding:20px; color:var(--text-muted);">Syncing live active database rows...</td></tr>
             </tbody>
         </table>
     </div>
@@ -556,7 +522,7 @@
             </p>
             <div class="form-group">
                 <label for="allianceCriteriaInput">Tactical Alliance Match Criteria Requirements:</label>
-                <textarea id="allianceCriteriaInput" placeholder="e.g., We need a consistent complementary partner with a high Teleop OPR and dependable Endgame hanging points. Prioritize bots noted for strong defensive driving frames." style="height: 100px; margin-bottom: 10px;"></textarea>
+                <textarea id="allianceCriteriaInput" placeholder="e.g., We need a consistent complementary partner with a high Teleop OPR and dependable Endgame hanging points. Prioritize bots noted for strong defensive driving frames." style="height: 80px; margin-bottom: 10px;"></textarea>
             </div>
             <button id="generateAllianceBtn" class="btn-success" onclick="generateAIAlliancePickList()">Generate AI Alliance Rankings</button>
         </div>
@@ -616,9 +582,10 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, doc, setDoc, onSnapshot, updateDoc, getDocs, getDoc, deleteDoc, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        
+        // Import the updated production standard SDK for generative features
         import { GoogleGenAI } from "https://esm.run/@google/genai-web";
 
-        // Unified credential key configuration layout
         const SCOUTER_API_KEY = "AIzaSyAcPbzSt-iY8RVsYdZpvIfAAS86CwSYa5Q";
 
         const firebaseConfig = {
@@ -647,13 +614,12 @@
         let isInitialLoad = true;
         let observedVisibleTeams = new Set();
 
-        // Safe operational boundary accessor for the generative interface
+        // Helper initialization closure to isolate generative API initialization safely
         function getAiEngine() {
             try {
-                // Return instance matching the decoupled Web SDK initialization format
                 return new GoogleGenAI({ apiKey: SCOUTER_API_KEY });
             } catch (err) {
-                console.error("AI Core Subsystem initialization issue:", err);
+                console.error("AI client wrapper initialization failure:", err);
                 return null;
             }
         }
@@ -711,8 +677,8 @@
                 updateCompDisplayState();
                 startLiveDataSyncEngines();
             } catch(e) {
-                console.error("Initialization pipeline exception: ", e);
-                document.getElementById('currentCompDisplay').innerText = "Database Synchronization Interrupted";
+                console.error("Initialization pipeline failure: ", e);
+                document.getElementById('currentCompDisplay').innerText = "Database Connection Broken";
             }
         }
 
@@ -887,15 +853,20 @@
             const entryId = `${activeCompetitionId}_${teamNum}`;
             await updateDoc(doc(db, "team_entries", entryId), { teamNotes: notesText });
 
+            // Safe contextual execution of text processing takeaways via Gemini Core
             const aiInstance = getAiEngine();
             if (notesText && aiInstance) {
                 try {
-                    const model = aiInstance.getGenerativeModel({ model: "gemini-2.5-flash" });
-                    const promptText = `Summarize these robotics metrics into 1-3 concise HTML bullet items for display inside a dashboard drawer. Output <ul> format only. Context: "${notesText}"`;
-                    const response = await model.generateContent([promptText]);
-                    await updateDoc(doc(db, "team_entries", entryId), { aiSummary: response.text.trim() });
+                    const model = aiInstance.models.generateContent({
+                        model: "gemini-2.5-flash",
+                        contents: `Summarize these robotics scouting notes into 1 to 3 bullet items for display inside a narrow UI card layout drawer. Output standard HTML <ul> format only. Notes text: "${notesText}"`
+                    });
+                    const response = await model;
+                    if (response && response.text) {
+                        await updateDoc(doc(db, "team_entries", entryId), { aiSummary: response.text.trim() });
+                    }
                 } catch (err) {
-                    console.error("AI generation exception:", err);
+                    console.error("AI context takeaway generation issue:", err);
                 }
             }
 
@@ -922,26 +893,27 @@
             const outputBody = document.getElementById('alliancePickTableBody');
 
             const aiInstance = getAiEngine();
-            if (!aiInstance) { alert("Model connectivity configuration context exception."); return; }
+            if (!aiInstance) { alert("Model connectivity configuration context error."); return; }
 
             runBtn.disabled = true;
-            statusLog.innerHTML = "Processing system array matrix telemetry... Querying Gemini.";
+            statusLog.innerHTML = "Processing telemetry matrix vectors... Invoking Gemini Core.";
             outputTable.style.display = "none";
 
             try {
                 const datasetContextString = currentScopeData.map(t => {
-                    return `Team #${t.teamNumber} (${t.teamName}) -> Auto OPR: ${t.autoOpr}, Teleop OPR: ${t.teleopOpr}, Avg Score: ${t.avgScore}, Endgame Points: ${t.endgame}, Notes Logged: "${t.teamNotes || 'None'}".`;
+                    return `Team #${t.teamNumber} (${t.teamName}) -> Auto OPR: ${t.autoOpr}, Teleop OPR: ${t.teleopOpr}, Avg Score: ${t.avgScore}, Endgame Points: ${t.endgame}, Notes: "${t.teamNotes || 'None'}".`;
                 }).join("\n");
 
-                const model = aiInstance.getGenerativeModel({ model: "gemini-2.5-flash" });
-                const strategicPrompt = `Rank all these teams based on criteria. Return a strict JSON array matching this format: [{"teamNumber": "5115", "teamName": "RoboKnights", "justification": "text description here"}] . Criteria: "${criteria}" . Matrix Dataset: ${datasetContextString}`;
+                const response = await aiInstance.models.generateContent({
+                    model: "gemini-2.5-flash",
+                    contents: `Rank all these teams based on the match criteria provided. Return a clean JSON array structure matching exactly this definition array format: [{"teamNumber": "5115", "teamName": "RoboKnights", "justification": "short clear sentence text"}] . Selection Criteria: "${criteria}" . Event Matrix Dataset: \n${datasetContextString}`
+                });
 
-                const response = await model.generateContent([strategicPrompt]);
                 const responseText = response.text.trim();
-
                 let structuredPriorityArray = [];
                 const startIdx = responseText.indexOf('[');
                 const endIdx = responseText.lastIndexOf(']') + 1;
+                
                 if (startIdx !== -1 && endIdx !== -1) {
                     structuredPriorityArray = JSON.parse(responseText.substring(startIdx, endIdx));
                 }
@@ -970,11 +942,11 @@
                     alignmentCounter++;
                 });
 
-                statusLog.innerText = `Optimization array mapped completely. Evaluated ${structuredPriorityArray.length} targets.`;
+                statusLog.innerText = `Optimization array compiled completely. Evaluated ${structuredPriorityArray.length} targets.`;
                 outputTable.style.display = "table";
             } catch (e) {
                 console.error(e);
-                statusLog.innerHTML = `<span style="color:var(--danger)">Strategic compilation framework error.</span>`;
+                statusLog.innerHTML = `<span style="color:var(--danger)">Strategic compilation runtime issue.</span>`;
             } finally {
                 runBtn.disabled = false;
             }
@@ -1029,7 +1001,7 @@
             let targetDisplayData = generateCompiledDisplayArray();
             
             if(targetDisplayData.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding:30px; color:var(--text-muted);">No team data records found logged in this competition profile view.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding:20px; color:var(--text-muted);">No team data records found logged in this competition profile view.</td></tr>`;
                 return;
             }
 
@@ -1083,7 +1055,6 @@
             });
         }
 
-        // Initialize script logic sequence
         initializeScoutingEnvironment();
     </script>
 </body>
