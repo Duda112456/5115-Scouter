@@ -348,6 +348,12 @@
             justify-content: flex-end;
             flex-wrap: wrap;
         }
+        .notes-save-btn {
+            padding: 8px 14px;
+            font-size: 0.85rem;
+            width: auto;
+            margin-top: 0;
+        }
         .notes-close-btn {
             background: #23163d;
             border: 1px solid var(--border-color);
@@ -934,20 +940,19 @@
             });
         }
 
-        window.closeNotesAndAutoSummarize = async function(teamNum, textareaElement, closeButtonElement) {
+        window.saveTeamNotesAndAutoSummarize = async function(teamNum, textareaElement) {
             const notesText = textareaElement.value.trim();
+            const button = textareaElement.nextElementSibling.nextElementSibling; // Targets save button specifically
             
-            closeButtonElement.innerText = "Saving & Summarizing...";
-            closeButtonElement.disabled = true;
+            button.innerText = "Saving & Summarizing...";
+            button.disabled = true;
             
             const entryId = `${activeCompetitionId}_${teamNum}`;
             
-            // 1. Immediately save the raw text entries
             await updateDoc(doc(db, "team_entries", entryId), {
                 teamNotes: notesText
             });
 
-            // 2. Automatically kick off AI summary engine if telemetry is provided
             if (notesText) {
                 try {
                     const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
@@ -965,11 +970,9 @@
                 }
             }
 
-            closeButtonElement.innerText = "Close Notes";
-            closeButtonElement.disabled = false;
-            
-            // 3. Hide the sliding container row element
-            toggleNotesDrawer(teamNum);
+            button.innerText = "Saved!";
+            button.disabled = false;
+            setTimeout(() => { button.innerText = "Save Notes"; }, 1500);
         }
 
         window.toggleNotesDrawer = function(teamNum) {
@@ -1148,8 +1151,8 @@
 
                 const inputsDisabledAttr = (isArchived || team.isCareerCompiledMock) ? "disabled" : "";
                 
-                // Sanitation engine configuration setup to clean notes strings
-                const cleanNotesString = (team.teamNotes !== undefined && team.teamNotes !== null) ? team.teamNotes : "";
+                // Keep notes perfectly clean and blank when truly missing
+                const cleanNotesString = (team.teamNotes !== undefined && team.teamNotes !== null && team.teamNotes !== "undefined") ? team.teamNotes : "";
 
                 tr.innerHTML = `
                     <td data-label="Team Rank">
@@ -1185,7 +1188,8 @@
                             <div class="notes-button-group">
                                 ${ !team.isCareerCompiledMock ? `
                                     <button class="profile-delete-btn" onclick="deleteTeamProfileData('${team.teamNumber}')">Delete Entry</button>
-                                    <button class="notes-close-btn" id="closebtn-${team.teamNumber}" onclick="closeNotesAndAutoSummarize('${team.teamNumber}', document.getElementById('textarea-${team.teamNumber}'), this)" ${inputsDisabledAttr}>Close Notes</button>
+                                    <button class="notes-close-btn" onclick="toggleNotesDrawer('${team.teamNumber}')">Close Notes</button>
+                                    <button class="notes-save-btn" onclick="saveTeamNotesAndAutoSummarize('${team.teamNumber}', document.getElementById('textarea-${team.teamNumber}'))" ${inputsDisabledAttr}>Save Notes</button>
                                 ` : `<span style="font-size:0.75rem; color:var(--text-muted); padding:8px;">Notes display aggregated summary tracking mode. Check individual event profiles to modify source values.</span>` }
                             </div>
                             <div class="notes-clear"></div>
