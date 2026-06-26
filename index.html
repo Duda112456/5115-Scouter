@@ -36,26 +36,31 @@
         }
         h2 { font-size: 1.2rem; margin-bottom: 15px; color: var(--text-main); text-transform: uppercase; letter-spacing: 0.5px;}
 
-        /* Top Bar Info */
+        /* Top Bar Info - REBUILT TO FIX CROP AND SPLIT TEXT */
         .comp-status-bar {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
-            padding: 12px;
+            padding: 16px;
             border-radius: 12px;
             margin-bottom: 20px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 14px;
             align-items: center;
             justify-content: space-between;
         }
-        @media (min-width: 768px) {
+        @media (min-width: 992px) {
             .comp-status-bar { flex-direction: row; }
         }
 
         .active-comp-info {
-            font-size: 0.95rem;
+            font-size: 1rem;
+            line-height: 1.5;
             color: var(--text-muted);
+            text-align: center;
+        }
+        @media (min-width: 992px) {
+            .active-comp-info { text-align: left; }
         }
         .active-comp-info strong {
             color: var(--primary);
@@ -72,6 +77,19 @@
             text-transform: uppercase;
         }
 
+        /* Control Settings Layout Container */
+        .status-actions-wrapper {
+            display: flex; 
+            gap: 10px; 
+            flex-wrap: wrap; 
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+        @media (min-width: 992px) {
+            .status-actions-wrapper { width: auto; justify-content: flex-end; }
+        }
+
         /* Toggle Button Group Styles */
         .toggle-group {
             display: inline-flex;
@@ -79,12 +97,15 @@
             border: 1px solid var(--border-color);
             padding: 4px;
             border-radius: 30px;
+            height: 40px;
+            align-items: center;
         }
         .toggle-btn {
             background: transparent;
             border: none;
             color: var(--text-muted);
-            padding: 6px 16px;
+            padding: 0 16px;
+            height: 100%;
             font-size: 0.85rem;
             font-weight: bold;
             border-radius: 20px;
@@ -92,10 +113,81 @@
             width: auto;
             margin-top: 0;
             transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
         }
         .toggle-btn.active {
             background: var(--primary);
             color: #fff;
+        }
+
+        /* Form Controls - HEIGHT AND LINE-HEIGHT CORRECTIONS */
+        input[type="text"], input[type="number"], select, textarea { 
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            padding: 0 12px; 
+            height: 40px;
+            line-height: 38px;
+            border: 1px solid var(--border-color); 
+            border-radius: 10px; 
+            font-size: 15px; 
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+        textarea { height: auto; line-height: 1.4; padding: 12px; }
+        
+        input:focus, select:focus, textarea:focus { 
+            border-color: var(--primary); 
+            outline: none; 
+            box-shadow: 0 0 0 3px rgba(255, 115, 0, 0.25); 
+        }
+
+        #compSelector {
+            min-width: 180px;
+            height: 40px;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+        }
+        
+        button { 
+            background: var(--primary); 
+            color: #fff; 
+            padding: 0 20px; 
+            height: 40px;
+            border: none; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            font-size: 15px; 
+            font-weight: 700; 
+            margin-top: 0; 
+            width: 100%; 
+            transition: background 0.2s; 
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        button:hover { background: var(--primary-hover); }
+
+        .btn-secondary {
+            background: #23163d;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+        }
+        .btn-secondary:hover { background: #312054; }
+
+        .btn-success { background: var(--success); }
+        .btn-success:hover { background: #218838; }
+
+        .btn-danger { background: var(--danger); }
+        .btn-danger:hover { background: #bd2130; }
+
+        /* Top Action Bar Operational Triggers */
+        .action-trigger-btn {
+            width: auto;
+            padding: 0 14px;
+            font-size: 0.85rem;
+            border-radius: 20px;
         }
 
         /* Tab Visibility Control */
@@ -113,62 +205,12 @@
         .form-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
         .form-group { display: flex; flex-direction: column; }
         label { margin-bottom: 6px; font-weight: 600; font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
-        
-        input[type="text"], input[type="number"], select, textarea { 
-            background-color: var(--bg-dark);
-            color: var(--text-main);
-            padding: 12px; 
-            border: 1px solid var(--border-color); 
-            border-radius: 10px; 
-            font-size: 16px; 
-            transition: all 0.2s ease;
-            font-family: inherit;
-        }
-        input:focus, select:focus, textarea:focus { 
-            border-color: var(--primary); 
-            outline: none; 
-            box-shadow: 0 0 0 3px rgba(255, 115, 0, 0.25); 
-        }
 
-        #compSelector {
-            min-width: 180px;
-            height: 36px;
-            background-color: var(--bg-dark);
-            color: var(--text-main);
-            border: 1px solid var(--border-color);
+        #teamForm button[type="submit"] {
+            margin-top: 10px;
+            height: 46px;
+            width: 100%;
         }
-        
-        button { 
-            background: var(--primary); 
-            color: #fff; 
-            padding: 14px; 
-            border: none; 
-            border-radius: 10px; 
-            cursor: pointer; 
-            font-size: 16px; 
-            font-weight: 700; 
-            margin-top: 10px; 
-            width: 100%; 
-            transition: background 0.2s; 
-        }
-        button:hover { background: var(--primary-hover); }
-
-        .btn-secondary {
-            background: #23163d;
-            border: 1px solid var(--border-color);
-            color: var(--text-main);
-        }
-        .btn-secondary:hover { background: #312054; }
-
-        .btn-success {
-            background: var(--success);
-        }
-        .btn-success:hover { background: #218838; }
-
-        .btn-danger {
-            background: var(--danger);
-        }
-        .btn-danger:hover { background: #bd2130; }
 
         /* Sorting Controls Box */
         .controls { 
@@ -207,7 +249,8 @@
         
         .alliance-input { 
             width: 70px; 
-            padding: 6px; 
+            padding: 0;
+            height: 34px;
             text-align: center; 
             font-size: 15px; 
             font-weight: 700;
@@ -215,47 +258,6 @@
             border: 2px solid var(--primary); 
             background: var(--bg-dark);
             color: var(--primary);
-        }
-
-        /* 3x Orange Flash Notification Effects */
-        .flash-notify {
-            animation: orangeFlash 0.5s ease-in-out 3;
-        }
-
-        @keyframes orangeFlash {
-            0%, 100% { background-color: var(--bg-card); }
-            50% { background-color: rgba(255, 115, 0, 0.45); }
-        }
-
-        /* Top Sticky Live Feed Ticker System Banner */
-        .ticker-banner-wrap {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            background-color: #200f3a;
-            border-bottom: 2px solid var(--primary);
-            color: #ffffff;
-            height: 38px;
-            overflow: hidden;
-            white-space: nowrap;
-            z-index: 2000;
-            display: none; 
-            align-items: center;
-        }
-        .ticker-text {
-            display: inline-block;
-            padding-left: 100%;
-            font-weight: bold;
-            font-size: 0.9rem;
-            letter-spacing: 0.5px;
-            animation: scrollTicker 12s linear infinite;
-        }
-        .ticker-text span { color: var(--primary); }
-
-        @keyframes scrollTicker {
-            0% { transform: translate3d(0, 0, 0); }
-            100% { transform: translate3d(-100%, 0, 0); }
         }
 
         /* Expanding Live Team Notes UI Block */
@@ -267,12 +269,12 @@
         .notes-toggle-btn {
             background: #23163d;
             color: var(--text-main);
-            padding: 8px 12px;
+            height: 34px;
+            padding: 0 14px;
             border-radius: 8px;
             font-size: 0.85rem;
             font-weight: 600;
             width: auto;
-            margin-top: 0;
             border: 1px solid var(--border-color);
         }
         
@@ -323,11 +325,11 @@
             gap: 8px;
             justify-content: flex-end;
         }
-        .notes-save-btn { padding: 8px 14px; font-size: 0.85rem; width: auto; margin-top: 0; }
-        .notes-close-btn { background: #23163d; border: 1px solid var(--border-color); color: var(--text-main); padding: 8px 14px; font-size: 0.85rem; width: auto; margin-top: 0; }
-        .profile-delete-btn { background: var(--danger); padding: 8px 14px; font-size: 0.85rem; width: auto; margin-top: 0; margin-right: auto; }
+        .notes-save-btn { height: 34px; padding: 0 14px; font-size: 0.85rem; width: auto; }
+        .notes-close-btn { background: #23163d; border: 1px solid var(--border-color); color: var(--text-main); height: 34px; padding: 0 14px; font-size: 0.85rem; width: auto; }
+        .profile-delete-btn { background: var(--danger); height: 34px; padding: 0 14px; font-size: 0.85rem; width: auto; margin-right: auto; }
 
-        /* REBUILT DESIGN FOR PERFECT 3-TAB ALIGNMENT */
+        /* Bottom Pill Bar Alignment Selection */
         .sketch-navbar-container {
             position: fixed;
             bottom: 20px;
@@ -345,7 +347,7 @@
             padding: 4px;
             border-radius: 40px;
             display: grid;
-            grid-template-columns: repeat(3, 1fr); /* Divides pill into 3 exact segments */
+            grid-template-columns: repeat(3, 1fr); 
             position: relative;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
             pointer-events: auto;
@@ -358,7 +360,7 @@
             top: 4px;
             left: 4px;
             height: calc(100% - 8px);
-            width: calc(33.333% - 6px); /* Exact third width minus padding balance */
+            width: calc(33.333% - 6px); 
             background-color: var(--primary);
             border-radius: 35px;
             transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
@@ -384,6 +386,7 @@
             transition: color 0.2s ease;
             width: 100%;
             margin: 0;
+            height: auto;
         }
 
         .nav-pill-btn svg {
@@ -416,7 +419,7 @@
         @media (min-width: 992px) {
             body { padding: 60px 30px 115px 30px; max-width: 1350px; margin: 0 auto; }
             .form-grid { grid-template-columns: repeat(3, 1fr); }
-            button { width: auto; padding: 12px 30px; align-self: end; }
+            #teamForm button[type="submit"] { width: auto; padding: 0 30px; align-self: end; }
             .controls { flex-direction: row; align-items: center; }
             .controls select { width: auto; min-width: 250px; }
             
@@ -456,10 +459,6 @@
 </head>
 <body>
 
-    <div class="ticker-banner-wrap" id="tickerBanner">
-        <div class="ticker-text" id="tickerText"></div>
-    </div>
-
     <h1><span style="color:var(--text-main)">5115</span> Scouter</h1>
 
     <div class="comp-status-bar">
@@ -468,7 +467,7 @@
             <span id="frozenBadge" class="frozen-badge" style="display:none;">Archived/Frozen</span>
         </div>
         
-        <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+        <div class="status-actions-wrapper">
             <div class="toggle-group">
                 <button id="viewCompToggle" class="toggle-btn active" onclick="setStatsScope('current')">Event Stats</button>
                 <button id="viewCareerToggle" class="toggle-btn" onclick="setStatsScope('career')">Career Stats</button>
@@ -476,10 +475,10 @@
             <select id="compSelector" onchange="changeActiveCompetitionContext(this.value)">
                 <option value="">Syncing database...</option>
             </select>
-            <button id="newCompBtn" class="btn-success" onclick="createNewCompetitionPrompt()" style="padding: 6px 14px; font-size: 0.85rem; border-radius: 20px; width: auto; margin-top:0;">+ New Event</button>
-            <button id="archiveBtn" class="btn-secondary" onclick="archiveCurrentCompetition()" style="padding: 6px 12px; font-size: 0.85rem; border-radius: 20px; width: auto; margin-top:0;">Archive Event</button>
-            <button id="unarchiveBtn" class="btn-success" onclick="unarchiveCurrentCompetition()" style="padding: 6px 12px; font-size: 0.85rem; border-radius: 20px; width: auto; margin-top:0; display:none;">Unarchive Event</button>
-            <button id="deleteCompBtn" class="btn-danger" onclick="deleteCurrentCompetition()" style="padding: 6px 12px; font-size: 0.85rem; border-radius: 20px; width: auto; margin-top:0;">Delete Event</button>
+            <button id="newCompBtn" class="btn-success action-trigger-btn" onclick="createNewCompetitionPrompt()">+ New Event</button>
+            <button id="archiveBtn" class="btn-secondary action-trigger-btn" onclick="archiveCurrentCompetition()">Archive Event</button>
+            <button id="unarchiveBtn" class="btn-success action-trigger-btn" onclick="unarchiveCurrentCompetition()" style="display:none;">Unarchive Event</button>
+            <button id="deleteCompBtn" class="btn-danger action-trigger-btn" onclick="deleteCurrentCompetition()">Delete Event</button>
         </div>
     </div>
 
@@ -562,7 +561,7 @@
             <button id="generateAllianceBtn" class="btn-success" onclick="generateAIAlliancePickList()">Generate AI Alliance Rankings</button>
         </div>
 
-        <div id="allianceListOutputStatus" class="scan-status-log" style="margin-bottom: 15px; text-align: center; color: var(--text-muted);"></div>
+        <div id="allianceListOutputStatus" style="margin-bottom: 15px; text-align: center; color: var(--text-muted);"></div>
 
         <table id="alliancePickTable" style="display: none;">
             <thead>
@@ -645,18 +644,16 @@
 
         let rawEntriesArray = [];
         let globalProfilesMap = new Map();
-        let historicalEntriesMap = new Map(); 
-        let observedVisibleTeams = new Set(); 
         let isInitialLoad = true;
-        let bannerQueue = [];
-        let bannerIsRunning = false;
+        let observedVisibleTeams = new Set();
 
         // Safe operational boundary accessor for the generative interface
         function getAiEngine() {
             try {
+                // Return instance matching the decoupled Web SDK initialization format
                 return new GoogleGenAI({ apiKey: SCOUTER_API_KEY });
             } catch (err) {
-                console.error("AI Core Subsystem failed initialization parameters:", err);
+                console.error("AI Core Subsystem initialization issue:", err);
                 return null;
             }
         }
@@ -714,7 +711,7 @@
                 updateCompDisplayState();
                 startLiveDataSyncEngines();
             } catch(e) {
-                console.error("Initialization pipeline broken: ", e);
+                console.error("Initialization pipeline exception: ", e);
                 document.getElementById('currentCompDisplay').innerText = "Database Synchronization Interrupted";
             }
         }
@@ -898,7 +895,7 @@
                     const response = await model.generateContent([promptText]);
                     await updateDoc(doc(db, "team_entries", entryId), { aiSummary: response.text.trim() });
                 } catch (err) {
-                    console.error("AI generation block halted structural output:", err);
+                    console.error("AI generation exception:", err);
                 }
             }
 
@@ -917,7 +914,7 @@
             if (!criteria) { alert("Please supply target strategic parameter constraints."); return; }
 
             const currentScopeData = generateCompiledDisplayArray();
-            if (currentScopeData.length === 0) { alert("No matrix rows present inside the targeting boundary map parameters."); return; }
+            if (currentScopeData.length === 0) { alert("No matrix rows present inside the current target event."); return; }
 
             const statusLog = document.getElementById('allianceListOutputStatus');
             const runBtn = document.getElementById('generateAllianceBtn');
@@ -925,10 +922,10 @@
             const outputBody = document.getElementById('alliancePickTableBody');
 
             const aiInstance = getAiEngine();
-            if (!aiInstance) { alert("Model connectivity configuration exception."); return; }
+            if (!aiInstance) { alert("Model connectivity configuration context exception."); return; }
 
             runBtn.disabled = true;
-            statusLog.innerHTML = "Querying operational metrics vectors... Connecting Gemini matrix optimization algorithms.";
+            statusLog.innerHTML = "Processing system array matrix telemetry... Querying Gemini.";
             outputTable.style.display = "none";
 
             try {
@@ -977,7 +974,7 @@
                 outputTable.style.display = "table";
             } catch (e) {
                 console.error(e);
-                statusLog.innerHTML = `<span style="color:var(--danger)">Strategic compilation framework fault exception.</span>`;
+                statusLog.innerHTML = `<span style="color:var(--danger)">Strategic compilation framework error.</span>`;
             } finally {
                 runBtn.disabled = false;
             }
@@ -1032,7 +1029,7 @@
             let targetDisplayData = generateCompiledDisplayArray();
             
             if(targetDisplayData.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding:30px; color:var(--text-muted);">No team matrix lines logged in this environment workspace scope profile template container.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding:30px; color:var(--text-muted);">No team data records found logged in this competition profile view.</td></tr>`;
                 return;
             }
 
@@ -1070,7 +1067,7 @@
                     <td colspan="9" class="drawer-fullwidth-cell">
                         <div class="notes-container" id="notes-${team.teamNumber}">
                             ${summaryHtml}
-                            <textarea class="notes-textarea" placeholder="Structural notes context parameters logged live...">${cleanNotesString}</textarea>
+                            <textarea class="notes-textarea" placeholder="Enter custom observations here...">${cleanNotesString}</textarea>
                             <div class="notes-button-group">
                                 ${!team.isCareerCompiledMock ? `<button class="profile-delete-btn" onclick="deleteTeamProfileData('${team.teamNumber}')">Delete Profile</button>` : ''}
                                 <button class="notes-close-btn" onclick="toggleNotesDrawer('${team.teamNumber}')">Close</button>
@@ -1086,6 +1083,7 @@
             });
         }
 
+        // Initialize script logic sequence
         initializeScoutingEnvironment();
     </script>
 </body>
