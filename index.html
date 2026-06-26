@@ -286,18 +286,25 @@
             display: block;
         }
         
+        /* FIX: Prevents empty bubble tracking lines on mobile when closed */
         .drawer-row-wrapper {
+            display: contents;
+        }
+
+        .drawer-fullwidth-cell {
             display: block;
             width: 100%;
+            padding: 0;
         }
 
         .notes-container {
             display: none;
-            margin-top: 10px;
-            background: var(--bg-dark);
-            padding: 12px;
-            border-radius: 10px;
-            border: 1px solid var(--border-color);
+            margin-top: -10px;
+            margin-bottom: 20px;
+            background: var(--bg-card);
+            padding: 16px;
+            border-radius: 16px;
+            border: 1px solid var(--primary);
             text-align: left;
         }
         .notes-container.open { display: block; }
@@ -333,6 +340,7 @@
             font-size: 0.9rem;
             padding: 8px;
             margin-bottom: 8px;
+            background-color: var(--bg-dark);
         }
         .notes-button-group {
             display: flex;
@@ -461,7 +469,7 @@
             .notes-column-cell { display: table-cell; padding: 14px; text-align: center; }
             .drawer-row-wrapper { display: table-row; }
             .drawer-fullwidth-cell { display: table-cell; colspan: 9; padding: 0 20px 20px 20px; border-top: none; background: rgba(10, 5, 20, 0.15); }
-            .notes-container { margin-top: 0; }
+            .notes-container { margin-top: 0; margin-bottom: 0; background: var(--bg-dark); border-radius: 10px; border: 1px solid var(--border-color); }
         }
     </style>
 </head>
@@ -638,25 +646,18 @@
                 contextList.push({id: d.id, ...d.data()});
             });
 
-            const todayStr = new Date().toISOString().split('T')[0];
-            let activeComp = contextList.find(c => c.dateStamp === todayStr && !c.isArchived);
+            // Find any existing event that is currently active (NOT archived)
+            let activeComp = contextList.find(c => !c.isArchived);
 
+            // If everything is archived, prompt to initialize a new active competition context
             if (!activeComp) {
-                const unarchivedComps = contextList.filter(c => !c.isArchived);
-                if (unarchivedComps.length > 0) {
-                    unarchivedComps.sort((a,b) => b.createdTime - a.createdTime);
-                    activeComp = unarchivedComps[0];
-                }
-            }
-
-            if (!activeComp) {
-                let newName = prompt("First launch initialization sequence detected! Please name your current Competition/Tournament Event profile:", "Qualifiers Day 1");
-                if (!newName || !newName.trim()) newName = "Default Tournament " + todayStr;
+                let newName = prompt("No active competition setup found. Please name your new Tournament profile:", "Qualifiers Match");
+                if (!newName || !newName.trim()) newName = "Tournament Event " + new Date().toISOString().split('T')[0];
                 
                 const generatedId = "comp_" + Date.now();
                 const newCompData = {
                     name: newName.trim(),
-                    dateStamp: todayStr,
+                    dateStamp: new Date().toISOString().split('T')[0],
                     isArchived: false,
                     createdTime: Date.now()
                 };
@@ -816,25 +817,16 @@
         document.getElementById('teamForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const targetComp = competitionsMap.get(activeCompetitionId);
+            
+            // Strictly base initialization check on whether the current focus profile is archived
             if (targetComp && targetComp.isArchived) {
-                alert("Edits frozen. Please create or swap to an unarchived competition structure target event context.");
-                return;
-            }
-
-            const todayStr = new Date().toISOString().split('T')[0];
-            const matchingTodayEntries = rawEntriesArray.filter(entry => {
-                const compCtx = competitionsMap.get(entry.competitionId);
-                return compCtx && compCtx.dateStamp === todayStr;
-            });
-
-            if (matchingTodayEntries.length === 0 && targetComp.dateStamp !== todayStr) {
-                if (confirm(`First team entry of a new calendar day detected! Do you want to establish a brand-new Competition Profile for today's logs? (Cancel keeps metrics running inside "${targetComp.name}")`)) {
-                    let newName = prompt("Enter Name for today's new Tournament tracking context profile:", "Qualifiers Matrix Event");
+                if (confirm(`The selected tracking context profile is archived. Do you want to establish a brand-new active Competition Profile now?`)) {
+                    let newName = prompt("Enter Name for new active Tournament tracking profile:", "Qualifiers Matrix Event");
                     if (newName && newName.trim()) {
                         const generatedId = "comp_" + Date.now();
                         const newCompData = {
                             name: newName.trim(),
-                            dateStamp: todayStr,
+                            dateStamp: new Date().toISOString().split('T')[0],
                             isArchived: false,
                             createdTime: Date.now()
                         };
@@ -843,7 +835,11 @@
                         activeCompetitionId = generatedId;
                         repopulateCompetitionDropdownSelector();
                         updateCompDisplayState();
+                    } else {
+                        return;
                     }
+                } else {
+                    return;
                 }
             }
 
