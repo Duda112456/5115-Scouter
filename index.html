@@ -1,7 +1,9 @@
-<!DOCTYPE html><html lang="en"><head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>5115 Scouter Dashboard Pro</title>
+    <title>5115 Scouter</title>
     <style>
         /* Team 5115 Brand Color Identity */
         :root {
@@ -164,7 +166,7 @@
         .app-view.active-view { display: block; }
 
         /* Form Layout */
-        form, .strategy-box { 
+        form { 
             background: var(--bg-card); 
             padding: 20px; 
             border-radius: 12px; 
@@ -258,24 +260,6 @@
             border: 1px solid var(--primary);
         }
         .notes-container.open { display: block; }
-        
-        /* New AI Takeaway Styles */
-        .ai-summary-display {
-            background: rgba(255, 115, 0, 0.08);
-            border-left: 3px solid var(--primary);
-            padding: 8px 12px;
-            border-radius: 0 6px 6px 0;
-            margin-bottom: 10px;
-            font-size: 0.85rem;
-            color: var(--text-main);
-        }
-        .ai-summary-display strong {
-            color: var(--primary);
-            display: block;
-            margin-bottom: 3px;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-        }
 
         .notes-textarea {
             width: 100%;
@@ -313,12 +297,12 @@
             padding: 3px;
             border-radius: 30px;
             display: grid;
-            grid-template-columns: repeat(3, 1fr); /* Upgraded from 2 to 3 for AI view */
+            grid-template-columns: repeat(2, 1fr); 
             position: relative;
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
             pointer-events: auto;
             width: 90%;
-            max-width: 440px;
+            max-width: 320px;
         }
 
         .nav-slider-bubble {
@@ -326,7 +310,7 @@
             top: 3px;
             left: 3px;
             height: calc(100% - 6px);
-            width: calc(33.333% - 4px); /* Adjusted width fraction to 1/3 */
+            width: calc(50% - 4px); 
             background-color: var(--primary);
             border-radius: 25px;
             transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
@@ -362,24 +346,6 @@
         }
 
         .nav-pill-btn.active-tab { color: #ffffff; }
-
-        /* AI Recommendations Specific Styling Elements */
-        .alliance-rank-badge {
-            background: var(--primary);
-            color: #fff;
-            font-weight: bold;
-            padding: 2px 8px;
-            border-radius: 6px;
-        }
-        .analysis-justification-card {
-            background: rgba(255, 115, 0, 0.04);
-            padding: 8px;
-            border-radius: 6px;
-            margin-top: 6px;
-            font-size: 0.85rem;
-            border-left: 2px solid var(--primary);
-            color: var(--text-main);
-        }
 
         /* Desktop View Adaptation Settings */
         @media (min-width: 768px) {
@@ -514,35 +480,6 @@
         </form>
     </div>
 
-    <div id="aiAllianceView" class="app-view">
-        <div class="strategy-box">
-            <h2>Alliance Selection Matrix Modeler</h2>
-            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 12px;">
-                Define specific tactical strengths or complementary bot traits needed for your playoff bracket. The Gemini core engine evaluates active stats alongside team notes to generate an optimization ranking map.
-            </p>
-            <div class="form-group">
-                <label for="allianceCriteriaInput">Tactical Alliance Match Criteria Requirements:</label>
-                <textarea id="allianceCriteriaInput" placeholder="e.g., We need a consistent complementary partner with a high Teleop OPR and dependable Endgame hanging points. Prioritize bots noted for strong defensive driving frames." style="height: 80px; margin-bottom: 10px;"></textarea>
-            </div>
-            <button id="generateAllianceBtn" class="btn-success" onclick="generateAIAlliancePickList()">Generate AI Alliance Rankings</button>
-        </div>
-
-        <div id="allianceListOutputStatus" style="margin-bottom: 15px; text-align: center; color: var(--text-muted);"></div>
-
-        <table id="alliancePickTable" style="display: none;">
-            <thead>
-                <tr>
-                    <th style="width: 80px;">Pick Priority</th>
-                    <th style="width: 90px;">Team #</th>
-                    <th>Team Identity Context</th>
-                    <th>Calculated Match Breakdown</th>
-                </tr>
-            </thead>
-            <tbody id="alliancePickTableBody">
-            </tbody>
-        </table>
-    </div>
-
     <div class="sketch-navbar-container">
         <div class="sketch-navbar-pill">
             <div class="nav-slider-bubble" id="navBubble"></div>
@@ -554,10 +491,6 @@
             <button class="nav-pill-btn" onclick="switchView('logView', this, 1)">
                 <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
                 Log Info
-            </button>
-            <button class="nav-pill-btn" onclick="switchView('aiAllianceView', this, 2)">
-                <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
-                AI Pick
             </button>
         </div>
     </div>
@@ -582,14 +515,9 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, doc, setDoc, onSnapshot, updateDoc, getDocs, getDoc, deleteDoc, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        
-        // Import the updated production standard SDK for generative features
-        import { GoogleGenAI } from "https://esm.run/@google/genai-web";
-
-        const SCOUTER_API_KEY = "AIzaSyAcPbzSt-iY8RVsYdZpvIfAAS86CwSYa5Q";
 
         const firebaseConfig = {
-            apiKey: SCOUTER_API_KEY,
+            apiKey: "AIzaSyAcPbzSt-iY8RVsYdZpvIfAAS86CwSYa5Q",
             authDomain: "ftc-team-scouter.firebaseapp.com",
             projectId: "ftc-team-scouter",
             storageBucket: "ftc-team-scouter.firebasestorage.app",
@@ -613,16 +541,6 @@
         let globalProfilesMap = new Map();
         let isInitialLoad = true;
         let observedVisibleTeams = new Set();
-
-        // Helper initialization closure to isolate generative API initialization safely
-        function getAiEngine() {
-            try {
-                return new GoogleGenAI({ apiKey: SCOUTER_API_KEY });
-            } catch (err) {
-                console.error("AI client wrapper initialization failure:", err);
-                return null;
-            }
-        }
 
         const rowVisibilityObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
@@ -746,8 +664,6 @@
             activeCompetitionId = selectedCompId;
             updateCompDisplayState();
             renderTable();
-            document.getElementById('alliancePickTable').style.display = "none";
-            document.getElementById('allianceListOutputStatus').innerText = "";
         }
 
         window.archiveCurrentCompetition = async function() {
@@ -843,7 +759,7 @@
             });
         }
 
-        window.saveTeamNotesAndAutoSummarize = async function(teamNum, textareaElement) {
+        window.saveTeamNotes = async function(teamNum, textareaElement) {
             const notesText = textareaElement.value.trim();
             const button = textareaElement.nextElementSibling.nextElementSibling;
             
@@ -853,23 +769,6 @@
             const entryId = `${activeCompetitionId}_${teamNum}`;
             await updateDoc(doc(db, "team_entries", entryId), { teamNotes: notesText });
 
-            // Safe contextual execution of text processing takeaways via Gemini Core
-            const aiInstance = getAiEngine();
-            if (notesText && aiInstance) {
-                try {
-                    const model = aiInstance.models.generateContent({
-                        model: "gemini-2.5-flash",
-                        contents: `Summarize these robotics scouting notes into 1 to 3 bullet items for display inside a narrow UI card layout drawer. Output standard HTML <ul> format only. Notes text: "${notesText}"`
-                    });
-                    const response = await model;
-                    if (response && response.text) {
-                        await updateDoc(doc(db, "team_entries", entryId), { aiSummary: response.text.trim() });
-                    }
-                } catch (err) {
-                    console.error("AI context takeaway generation issue:", err);
-                }
-            }
-
             button.innerText = "Saved Context";
             button.disabled = false;
             setTimeout(() => { button.innerText = "Save Notes"; }, 1200);
@@ -878,78 +777,6 @@
         window.toggleNotesDrawer = function(teamNum) {
             const drawer = document.getElementById(`notes-${teamNum}`);
             if(drawer) drawer.classList.toggle('open');
-        }
-
-        window.generateAIAlliancePickList = async function() {
-            const criteria = document.getElementById('allianceCriteriaInput').value.trim();
-            if (!criteria) { alert("Please supply target strategic parameter constraints."); return; }
-
-            const currentScopeData = generateCompiledDisplayArray();
-            if (currentScopeData.length === 0) { alert("No matrix rows present inside the current target event."); return; }
-
-            const statusLog = document.getElementById('allianceListOutputStatus');
-            const runBtn = document.getElementById('generateAllianceBtn');
-            const outputTable = document.getElementById('alliancePickTable');
-            const outputBody = document.getElementById('alliancePickTableBody');
-
-            const aiInstance = getAiEngine();
-            if (!aiInstance) { alert("Model connectivity configuration context error."); return; }
-
-            runBtn.disabled = true;
-            statusLog.innerHTML = "Processing telemetry matrix vectors... Invoking Gemini Core.";
-            outputTable.style.display = "none";
-
-            try {
-                const datasetContextString = currentScopeData.map(t => {
-                    return `Team #${t.teamNumber} (${t.teamName}) -> Auto OPR: ${t.autoOpr}, Teleop OPR: ${t.teleopOpr}, Avg Score: ${t.avgScore}, Endgame Points: ${t.endgame}, Notes: "${t.teamNotes || 'None'}".`;
-                }).join("\n");
-
-                const response = await aiInstance.models.generateContent({
-                    model: "gemini-2.5-flash",
-                    contents: `Rank all these teams based on the match criteria provided. Return a clean JSON array structure matching exactly this definition array format: [{"teamNumber": "5115", "teamName": "RoboKnights", "justification": "short clear sentence text"}] . Selection Criteria: "${criteria}" . Event Matrix Dataset: \n${datasetContextString}`
-                });
-
-                const responseText = response.text.trim();
-                let structuredPriorityArray = [];
-                const startIdx = responseText.indexOf('[');
-                const endIdx = responseText.lastIndexOf(']') + 1;
-                
-                if (startIdx !== -1 && endIdx !== -1) {
-                    structuredPriorityArray = JSON.parse(responseText.substring(startIdx, endIdx));
-                }
-
-                outputBody.innerHTML = "";
-                let alignmentCounter = 1;
-
-                structuredPriorityArray.forEach((pick) => {
-                    const matchingRawStats = currentScopeData.find(s => String(s.teamNumber) === String(pick.teamNumber)) || {};
-                    const tr = document.createElement('tr');
-                    
-                    tr.innerHTML = `
-                        <td data-label="Pick Priority"><span class="alliance-rank-badge">#${alignmentCounter}</span></td>
-                        <td data-label="Team #"><b>${pick.teamNumber}</b></td>
-                        <td data-label="Team Identity Context">
-                            <strong>${pick.teamName || matchingRawStats.teamName || 'Unknown'}</strong><br>
-                            <span style="font-size:0.8rem; color:var(--text-muted)">
-                                OPR: ${(matchingRawStats.overallOpr || 0)} | Auto: ${(matchingRawStats.autoOpr || 0)}
-                            </span>
-                        </td>
-                        <td data-label="Calculated Match Breakdown">
-                            <div class="analysis-justification-card">${pick.justification}</div>
-                        </td>
-                    `;
-                    outputBody.appendChild(tr);
-                    alignmentCounter++;
-                });
-
-                statusLog.innerText = `Optimization array compiled completely. Evaluated ${structuredPriorityArray.length} targets.`;
-                outputTable.style.display = "table";
-            } catch (e) {
-                console.error(e);
-                statusLog.innerHTML = `<span style="color:var(--danger)">Strategic compilation runtime issue.</span>`;
-            } finally {
-                runBtn.disabled = false;
-            }
         }
 
         function startLiveDataSyncEngines() {
@@ -1015,7 +842,6 @@
                 const tr = document.createElement('tr');
                 tr.setAttribute('data-team', team.teamNumber);
                 
-                const summaryHtml = team.aiSummary ? `<div class="ai-summary-display"><strong>⚡ AI Scouting Takeaways</strong>${team.aiSummary}</div>` : '';
                 const inputsDisabledAttr = (isArchived || team.isCareerCompiledMock) ? "disabled" : "";
                 const cleanNotesString = team.teamNotes || "";
 
@@ -1029,7 +855,7 @@
                     <td data-label="Avg Points">${team.avgScore}</td>
                     <td data-label="Endgame Pts">${team.endgame}</td>
                     <td data-label="Actions" class="notes-column-cell">
-                        <button class="notes-toggle-btn" onclick="toggleNotesDrawer('${team.teamNumber}')">Notes / AI</button>
+                        <button class="notes-toggle-btn" onclick="toggleNotesDrawer('${team.teamNumber}')">Notes</button>
                     </td>
                 `;
 
@@ -1038,12 +864,11 @@
                 drawerTr.innerHTML = `
                     <td colspan="9" class="drawer-fullwidth-cell">
                         <div class="notes-container" id="notes-${team.teamNumber}">
-                            ${summaryHtml}
                             <textarea class="notes-textarea" placeholder="Enter custom observations here...">${cleanNotesString}</textarea>
                             <div class="notes-button-group">
                                 ${!team.isCareerCompiledMock ? `<button class="profile-delete-btn" onclick="deleteTeamProfileData('${team.teamNumber}')">Delete Profile</button>` : ''}
                                 <button class="notes-close-btn" onclick="toggleNotesDrawer('${team.teamNumber}')">Close</button>
-                                <button class="notes-save-btn" onclick="saveTeamNotesAndAutoSummarize('${team.teamNumber}', this.parentNode.previousElementSibling)" ${inputsDisabledAttr}>Save Notes</button>
+                                <button class="notes-save-btn" onclick="saveTeamNotes('${team.teamNumber}', this.parentNode.previousElementSibling)" ${inputsDisabledAttr}>Save Notes</button>
                             </div>
                         </div>
                     </td>
