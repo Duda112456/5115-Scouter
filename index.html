@@ -498,6 +498,7 @@
                 </select>
             <button id="archiveBtn" class="btn-secondary" onclick="archiveCurrentCompetition()" style="padding: 6px 12px; font-size: 0.85rem; border-radius: 20px; width: auto; margin-top:0;">Archive Event</button>
             <button id="unarchiveBtn" class="btn-success" onclick="unarchiveCurrentCompetition()" style="padding: 6px 12px; font-size: 0.85rem; border-radius: 20px; width: auto; margin-top:0; display:none;">Unarchive Event</button>
+            <button id="deleteCompBtn" class="btn-danger" onclick="deleteCurrentCompetition()" style="padding: 6px 12px; font-size: 0.85rem; border-radius: 20px; width: auto; margin-top:0;">Delete Event</button>
         </div>
     </div>
 
@@ -583,7 +584,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, doc, setDoc, onSnapshot, updateDoc, getDocs, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, doc, setDoc, onSnapshot, updateDoc, getDocs, getDoc, deleteDoc, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { GoogleGenAI } from "https://esm.run/@google/genai";
 
         const firebaseConfig = {
@@ -643,6 +644,7 @@
         async function initializeScoutingEnvironment() {
             const snap = await getDocs(compsCollection);
             let contextList = [];
+            competitionsMap.clear();
             snap.forEach(d => {
                 competitionsMap.set(d.id, d.data());
                 contextList.push({id: d.id, ...d.data()});
@@ -652,7 +654,7 @@
             let activeComp = contextList.find(c => !c.isArchived);
 
             // If everything is archived, prompt to initialize a new active competition context
-            if (!activeComp) {
+            if (!activeComp && contextList.length === 0) {
                 let newName = prompt("No active competition setup found. Please name your new Tournament profile:", "Qualifiers Match");
                 if (!newName || !newName.trim()) newName = "Tournament Event " + new Date().toISOString().split('T')[0];
                 
@@ -667,6 +669,9 @@
                 await setDoc(doc(db, "competitions", generatedId), newCompData);
                 competitionsMap.set(generatedId, newCompData);
                 activeCompetitionId = generatedId;
+            } else if (!activeComp && contextList.length > 0) {
+                // If everything is archived but profiles exist, snap onto the first available tournament block
+                activeCompetitionId = contextList[0].id;
             } else {
                 activeCompetitionId = activeComp.id;
             }
@@ -749,6 +754,48 @@
                 repopulateCompetitionDropdownSelector();
                 updateCompDisplayState();
                 renderTable();
+            }
+        }
+
+        window.deleteCurrentCompetition = async function() {
+            const comp = competitionsMap.get(activeCompetitionId);
+            if (!comp) {
+                alert("No tournament selected to drop.");
+                return;
+            }
+
+            // Challenge gate prompt setup
+            const pinAttempt = prompt(`⚠️ CRITICAL ACCESS: You are attempting to completely erase the competition profile: "${comp.name}".\n\nThis completely wipes the event configuration and all associated team scouter metrics permanently from Firestore.\n\nEnter the 4-digit master delete code to proceed:`);
+            
+            if (pinAttempt === null) return; // User pressed cancel
+            
+            if (pinAttempt.trim() !== "4994") {
+                alert("❌ ACCESS DENIED: Invalid 4-digit authentication signature code match configuration.");
+                return;
+            }
+
+            if (confirm(`Final warning: Are you completely certain you want to purge all tournament references and telemetry entries for "${comp.name}"?`)) {
+                try {
+                    // 1. Clear out all team entry match performance documents recorded for this tournament
+                    const q = query(entriesCollection, where("competitionId", "==", activeCompetitionId));
+                    const entrySnap = await getDocs(q);
+                    const deletePromises = [];
+                    entrySnap.forEach((docRef) => {
+                        deletePromises.push(deleteDoc(doc(db, "team_entries", docRef.id)));
+                    });
+                    await Promise.all(deletePromises);
+
+                    // 2. Clear out the primary structural configuration block document
+                    await deleteDoc(doc(db, "competitions", activeCompetitionId));
+                    
+                    alert("🗑️ Competition and corresponding entries successfully purged from the system registry.");
+                    
+                    // 3. Reset the application context mapping engine completely
+                    await initializeScoutingEnvironment();
+                } catch(err) {
+                    console.error("purging exception log pipeline err: ", err);
+                    alert("An error occurred trying to delete the database records.");
+                }
             }
         }
 
