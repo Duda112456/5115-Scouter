@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<!DOCTYPE html><html lang="en"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>5115 Scouter Dashboard Pro</title>
@@ -490,9 +488,7 @@
             .drawer-fullwidth-cell { display: table-cell; padding: 0 20px 20px 20px; border-top: none; background: rgba(10, 5, 20, 0.15); }
             .notes-container { margin-top: 0; margin-bottom: 0; background: var(--bg-dark); border-radius: 10px; border: 1px solid var(--border-color); }
         }
-    </style>
-</head>
-<body>
+    </style></head><body>
 
     <div class="ticker-banner-wrap" id="tickerBanner">
         <div class="ticker-text" id="tickerText"></div>
@@ -1203,6 +1199,8 @@
                     </td>
                 `;
 
+                tbody.appendChild(tr);
+
                 const drawerTr = document.createElement('tr');
                 drawerTr.className = "drawer-row-wrapper";
                 drawerTr.innerHTML = `
@@ -1216,19 +1214,17 @@
                                 <button class="notes-close-btn" onclick="toggleNotesDrawer('${team.teamNumber}')">Close</button>
                                 <button class="notes-save-btn" onclick="saveTeamNotesAndAutoSummarize('${team.teamNumber}', this.parentNode.previousElementSibling)" ${inputsDisabledAttr}>Save Notes</button>
                             </div>
-                            <div class="notes-clear"></div>
                         </div>
                     </td>
                 `;
-
-                tbody.appendChild(tr);
                 tbody.appendChild(drawerTr);
-
                 rowVisibilityObserver.observe(tr);
             });
         }
 
-        initializeScoutingEnvironment();
+        window.addEventListener('DOMContentLoaded', () => {
+            initializeScoutingEnvironment();
+        });
     </script>
 </body>
 </html>
